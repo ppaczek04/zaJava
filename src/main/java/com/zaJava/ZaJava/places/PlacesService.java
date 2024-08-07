@@ -2,24 +2,46 @@ package com.zaJava.ZaJava.places;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 @Service
 public class PlacesService {
 
+    private final WebClient webClient;
+
     @Value("${google.api.key}")
-    private String googleApiKey;
+    private String apiKey;
 
-    private final RestTemplate restTemplate;
-
-    public PlacesService(RestTemplate restTemplate) {
-        this.restTemplate = restTemplate;
+    public PlacesService(WebClient.Builder webClientBuilder) {
+        this.webClient = webClientBuilder.build();
     }
 
-    public String findRestaurant(double lat, double lng) {
-        String url = String.format("https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=%f,%f&radius=1500&type=restaurant&key=%s",
-                lat, lng, googleApiKey);
+    public Mono<String> searchNearbyRestaurants(RestaurantDto request) {
+        String url = "https://places.googleapis.com/v1/places:searchNearby";
 
-        return restTemplate.getForObject(url, String.class);
+        String requestBody = "{"
+                + "\"includedTypes\": [\"restaurant\"],"
+                + "\"maxResultCount\": 10,"
+                + "\"locationRestriction\": {"
+                + "\"circle\": {"
+                + "\"center\": {"
+                + "\"latitude\": " + request.getLatitude() + ","
+                + "\"longitude\": " + request.getLongitude()
+                + "},"
+                + "\"radius\": " + request.getRadius()
+                + "}"
+                + "}"
+                + "}";
+
+        return webClient.post()
+                .uri(url)
+                .header("Content-Type", "application/json")
+                .header("X-Goog-Api-Key", apiKey)
+                .header("X-Goog-FieldMask", "places.displayName")
+                .bodyValue(requestBody)
+                .retrieve()
+                .bodyToMono(String.class);
     }
 }
+
