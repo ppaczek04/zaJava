@@ -1,42 +1,36 @@
+<!--<!DOCTYPE html>-->
+<!--<html xmlns:th="http://www.thymeleaf.org" lang="eng">-->
+<!--<head>-->
+<!--    <title>Simple map</title>-->
+<!--    <link rel="stylesheet" type="text/css" href="../static/style.css" />-->
+
+<!--    <script th:inline="javascript" src="../static/script.js"></script>-->
+<!--    <script async-->
+<!--            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBa2ZVd0g5zyaDgpe2DvrrsMx8StsvQGPk&callback=initMap">-->
+<!--    </script>-->
+<!--</head>-->
+<!--<body>-->
+<!--<h1>GOOGLE MAP</h1>-->
+<!--<hr>-->
+<!--<div id="map"></div>-->
+<!--</body>-->
+<!--</html>-->
+
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
     <title>Simple map</title>
-    <script
-            async
-            defer
-            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBa2ZVd0g5zyaDgpe2DvrrsMx8StsvQGPk&callback=initMap"
-    ></script>
-    <script src="../static/script.js"></script>
     <link rel="stylesheet" type="text/css" href="../static/style.css" />
+    <script th:inline="javascript" src="../static/script.js"></script>
+    <script async
+            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB-pJBCdZkhUBw4ErUoXQMqEwB3Sajn9cg&callback=initMap">
+    </script>
 </head>
 <body>
 <h1>GOOGLE MAP</h1>
 <hr>
-<div id="map"></div>
+<div id="map" style="height:500px;width:100%"></div>
 </body>
 </html>
 
-<!--<!DOCTYPE html>-->
-<!--<html xmlns:th="http://www.thymeleaf.org">-->
-<!--<head>-->
-<!--    <meta charset="UTF-8">-->
-<!--    <title>Mapa</title>-->
-<!--    &lt;!&ndash; Załaduj Google Maps API &ndash;&gt;-->
-<!--    <script src=https://maps.googleapis.com/maps/api/js?key=AIzaSyBa2ZVd0g5zyaDgpe2DvrrsMx8StsvQGPk&callback=initMap" async defer></script>-->
-<!--    &lt;!&ndash; Załaduj swój plik JS &ndash;&gt;-->
-<!--    <script src="../static/script.js"></script>-->
-<!--    <style>-->
-<!--        /* Styl dla mapy */-->
-<!--        #map {-->
-<!--            height: 400px;-->
-<!--            width: 100%;-->
-<!--        }-->
-<!--    </style>-->
-<!--</head>-->
-<!--<body>-->
-<!--<h1>Mapa</h1>-->
-<!--&lt;!&ndash; Kontener mapy &ndash;&gt;-->
-<!--<div id="map"></div>-->
-<!--</body>-->
-<!--</html>-->
+
