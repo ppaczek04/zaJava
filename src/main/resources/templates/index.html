@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Maps</title>
+    <link rel="stylesheet" type="text/css" href="/custom.css"/>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js" integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0" crossorigin="anonymous"></script>
+
+</head>
+<body>
+<div class="container bg-light justify-content-center">
+    <div class="row">
+        <div class="span6" style="float: none; margin: 0 auto;">
+            <br/>
+            <h1 class="text-center">Wybierz miasto</h1>
+            <form th:action="@{/home}" th:object="${location}" method="post" autocomplete="off" class="form-inline">
+                <div class="form-group">
+                    <input type="text" th:field="*{city}" placeholder="Miasto" class="form-control"/>
+                </div>
+                <div class="form-group">
+                    <button class="btn btn-md btn-primary btn-block" name="Submit" value="Submit" type="Submit">Zatwierdź</button>
+                </div>
+                <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#checkboxModal">
+                    Wybierz opcje
+                </button>
+            </form>
+            <br/>
+        </div>
+    </div>
+</div>
+<!-- Modal -->
+<div class="modal fade" id="checkboxModal" tabindex="-1" aria-labelledby="checkboxModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="checkboxModalLabel">Wybierz opcje</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form th:action="@{/processSelections}" th:object="${selections}" method="post">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" th:field="*{restaurant}" id="restaurant">
+                        <label class="form-check-label" for="restaurant">
+                            Restaurants
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" th:field="*{castles}" id="castles">
+                        <label class="form-check-label" for="castles">
+                            Castles
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" th:field="*{entertainment}" id="entertainment">
+                        <label class="form-check-label" for="entertainment">
+                            Entertainment
+                        </label>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zamknij</button>
+                        <button type="submit" class="btn btn-primary">Zatwierdź wybory</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="map"></div>
+<script th:inline="javascript">
+    /*<![CDATA[*/
+
+    const coords = {
+        lat: parseFloat([[${location.lat}]]), //|| -89.9988 ,
+        lng: parseFloat([[${location.lng}]]) //|| 39.9612
+    };
+    let city = [[${location.city}]];
+    /*]]>*/
+</script>
+<script th:inline="javascript" src="/script.js"></script>
+<script th:src="@{${'https://maps.googleapis.com/maps/api/js?key=' +
+      @environment.getProperty('api_key') + '&callback=initMap'}}" async defer>
+</script>
+
+</body>
+</html>
