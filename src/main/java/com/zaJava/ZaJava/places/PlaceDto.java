@@ -5,7 +5,7 @@ import lombok.Setter;
 
 @Setter
 @Getter
-public class RestaurantDto {
+public class PlaceDto {
     private double latitude;
     private double longitude;
     private double radius;

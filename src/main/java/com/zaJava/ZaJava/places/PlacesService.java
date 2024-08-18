@@ -20,11 +20,11 @@ public class PlacesService {
         this.placesMapper = placesMapper;
     }
 
-    public Mono<String> searchNearbyRestaurants(RestaurantDto request) {
+    public Mono<String> searchNearbyRestaurants(PlaceDto request, String[] types) {
         String url = ":searchNearby";
 
         String requestBody = placesMapper.getRequestBodyNearbySearch(
-                new String[]{"restaurant"},
+                types,
                 request.getLatitude(),
                 request.getLongitude(),
                 request.getRadius()
