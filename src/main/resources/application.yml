@@ -12,6 +12,8 @@ spring:
       ddl-auto: create-drop
     database: postgresql
     show-sql: true
+  main:
+    allow-bean-definition-overriding: true
 
 google:
   api:
