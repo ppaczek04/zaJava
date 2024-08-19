@@ -9,7 +9,7 @@ import org.springframework.web.client.RestTemplate;
 
 @Service
 public class MapService {
-    @Value("${api_key}")
+    @Value("${google.api.key}")
     private String apiKey;
 
     public void addCoordinates( Location location){
