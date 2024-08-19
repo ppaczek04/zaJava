@@ -9,36 +9,37 @@ import reactor.core.publisher.Mono;
 public class PlacesService {
 
     private final WebClient webClient;
+    private final PlacesMapper placesMapper;
 
-    @Value("${google.api.key}")
-    private String apiKey;
-
-    public PlacesService(WebClient.Builder webClientBuilder) {
-        this.webClient = webClientBuilder.build();
+    public PlacesService(@Value("${google.api.key}") String apiKey, PlacesMapper placesMapper) {
+        this.webClient = WebClient.builder()
+                .baseUrl("https://places.googleapis.com/v1/places")
+                .defaultHeader("Content-Type", "application/json")
+                .defaultHeader("X-Goog-Api-Key", apiKey)
+                .build();
+        this.placesMapper = placesMapper;
     }
 
-    public Mono<String> searchNearbyRestaurants(RestaurantDto request) {
-        String url = "https://places.googleapis.com/v1/places:searchNearby";
+    public Mono<String> searchNearbyRestaurants(PlaceDto request, String[] types) {
+        String url = ":searchNearby";
 
-        String requestBody = "{"
-                + "\"includedTypes\": [\"restaurant\"],"
-                + "\"maxResultCount\": 10,"
-                + "\"locationRestriction\": {"
-                + "\"circle\": {"
-                + "\"center\": {"
-                + "\"latitude\": " + request.getLatitude() + ","
-                + "\"longitude\": " + request.getLongitude()
-                + "},"
-                + "\"radius\": " + request.getRadius()
-                + "}"
-                + "}"
-                + "}";
+        String requestBody = placesMapper.getRequestBodyNearbySearch(
+                types,
+                request.getLatitude(),
+                request.getLongitude(),
+                request.getRadius()
+        );
 
         return webClient.post()
                 .uri(url)
-                .header("Content-Type", "application/json")
-                .header("X-Goog-Api-Key", apiKey)
-                .header("X-Goog-FieldMask", "places.displayName")
+                .header(
+                        "X-Goog-FieldMask",
+                        "places.displayName.text",
+                        "places.location",
+                        "places.rating",
+                        "places.websiteUri",
+                        "places.regularOpeningHours.weekdayDescriptions"
+                )
                 .bodyValue(requestBody)
                 .retrieve()
                 .bodyToMono(String.class);
