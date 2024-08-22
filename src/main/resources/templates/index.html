@@ -59,7 +59,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zamknij</button>
-                        <button type="submit" class="btn btn-primary">Zatwierdź wybory</button>
+                        <button id="submitBtn" type="submit" class="btn btn-primary">Zatwierdź wybory</button>
                     </div>
                 </form>
             </div>
@@ -69,9 +69,10 @@
 <div id="map"></div>
 <script th:inline="javascript">
     /*<![CDATA[*/
+    const points = /*[[${points}]]*/ [];
 
     const coords = {
-        lat: parseFloat([[${location.lat}]]), //|| -89.9988 ,
+        lat: parseFloat([[${location.lat}]]), //|| -89.9988,
         lng: parseFloat([[${location.lng}]]) //|| 39.9612
     };
     let city = [[${location.city}]];

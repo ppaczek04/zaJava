@@ -20,27 +20,27 @@ public class PlacesController {
 
     @PostMapping("/restaurant")
     public Mono<String> getNearbyRestaurant(@RequestBody PlaceDto request) {
-        return placesService.searchNearbyRestaurants(request, typesLists.getFoodAndDrink());
+        return placesService.searchNearby(request, typesLists.getFoodAndDrink());
     }
 
     @PostMapping("/entertainment")
     public Mono<String> getNearbyEntertainment(@RequestBody PlaceDto request) {
-        return placesService.searchNearbyRestaurants(request, typesLists.getEntertainmentAndRecreation());
+        return placesService.searchNearby(request, typesLists.getEntertainmentAndRecreation());
     }
 
     @PostMapping("/culture")
     public Mono<String> getNearbyCulture(@RequestBody PlaceDto request) {
-        return placesService.searchNearbyRestaurants(request, typesLists.getCulture());
+        return placesService.searchNearby(request, typesLists.getCulture());
     }
 
     @PostMapping("/sport")
     public Mono<String> getNearbySport(@RequestBody PlaceDto request) {
-        return placesService.searchNearbyRestaurants(request, typesLists.getSport());
+        return placesService.searchNearby(request, typesLists.getSport());
     }
 
     @PostMapping("/busStop")
     public Mono<String> getNearbyBusStop(@RequestBody PlaceDto request) {
-        return placesService.searchNearbyRestaurants(request, typesLists.getBusStop());
+        return placesService.searchNearby(request, typesLists.getBusStop());
     }
 }
 

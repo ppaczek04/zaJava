@@ -31,7 +31,7 @@ public class TypesLists {
                 "zoo"};
     }
 
-    String[] getFoodAndDrink(){
+    public String[] getFoodAndDrink(){
         return new String[] {"american_restaurant",
                 "bakery",
                 "bar",
