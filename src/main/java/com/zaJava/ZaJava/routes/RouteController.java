@@ -14,11 +14,9 @@ public class RouteController {
         this.routeService = routeService;
     }
 
-    @PostMapping("/calculate")
-    public RouteLine calculateRoute(@RequestBody MapPointRequest mapPointRequest) {
-        MapPoint origin = new MapPoint(mapPointRequest.getOriginName(), mapPointRequest.getOriginLatitude(), mapPointRequest.getOriginLongitude());
-        MapPoint destination = new MapPoint(mapPointRequest.getDestinationName(), mapPointRequest.getDestinationLatitude(), mapPointRequest.getDestinationLongitude());
-        return routeService.calculateRoute(origin, destination);
+    @PostMapping("/compute")
+    public RouteResponse computeRoute(@RequestBody RouteRequest routeRequest) {
+        return routeService.getRoute(routeRequest);
     }
 }
 

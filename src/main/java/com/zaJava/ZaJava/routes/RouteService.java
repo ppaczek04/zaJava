@@ -1,68 +1,39 @@
 package com.zaJava.ZaJava.routes;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
-import reactor.core.publisher.Mono;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 
 @Service
 public class RouteService {
 
-    private final WebClient webClient;
+    @Value("${google.api.key}")
+    private String apiKey;
 
-    @Autowired
-    public RouteService(WebClient webClient) {
-        this.webClient = webClient;
+    private final RestTemplate restTemplate;
+
+    public RouteService(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
     }
 
-    public RouteLine calculateRoute(MapPoint origin, MapPoint destination) {
-        try {
-            String apiKey = "YOUR_API_KEY"; // Replace with your Google API key
-            String requestBody = String.format(
-                    "{\n" +
-                            "  \"origin\": {\n" +
-                            "    \"location\": {\n" +
-                            "      \"latLng\": {\n" +
-                            "        \"latitude\": %f,\n" +
-                            "        \"longitude\": %f\n" +
-                            "      }\n" +
-                            "    }\n" +
-                            "  },\n" +
-                            "  \"destination\": {\n" +
-                            "    \"location\": {\n" +
-                            "      \"latLng\": {\n" +
-                            "        \"latitude\": %f,\n" +
-                            "        \"longitude\": %f\n" +
-                            "      }\n" +
-                            "    }\n" +
-                            "  },\n" +
-                            "  \"travelMode\": \"DRIVE\"\n" +
-                            "}",
-                    origin.getLatitude(), origin.getLongtude(),
-                    destination.getLatitude(), destination.getLongtude()
-            );
+    public RouteResponse getRoute(RouteRequest routeRequest) {
+        String url = "https://routes.googleapis.com/directions/v2:computeRoutes?key=" + apiKey;
 
-            String apiUrl = "https://routes.googleapis.com/directions/v2:computeRoutes";
-            RouteLine route = webClient.post()
-                    .uri(apiUrl)
-                    .header("Content-Type", "application/json")
-                    .header("Authorization", "Bearer " + "YOUR_OAUTH_TOKEN")
-                    .header("X-Goog-User-Project", "YOUR_PROJECT_ID")
-                    .bodyValue(requestBody)
-                    .retrieve()
-                    .bodyToMono(RouteLine.class)
-                    .block();
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Content-Type", "application/json");
+        headers.set("Authorization", "ya29.a0AcM612xu_DwirHYbhXcrPvApV-jald5W_siAZF8Y6fYCxE3eKJgb8s_NuxenkQOza1VFL80J1qCugx5XtXVUdN8bHu4_v-bXbCvG2dZfN2yZ7SvtE5QWHgJEQEEKwCyAoRTM1a8777-l8o0QvegtoohdyVpXBSOjJCt_aCgYKAYsSARASFQHGX2MiAc03sKVszWuURK6pg1RJsg0171");
+        headers.set("X-Goog-UserProject", "routesproapi");
+        headers.set("X-Goog-FieldMask", "routes.duration,routes.distanceMeters,routes.polyline.encodedPolyline");
 
-            // Set start and end points
-            route.setStartPoint(origin);
-            route.setEndPoint(destination);
-            return route;
+        HttpEntity<RouteRequest> request = new HttpEntity<>(routeRequest, headers);
 
-        } catch (WebClientResponseException ex) {
-            // Handle error here, e.g., log it or throw a custom exception
-            ex.printStackTrace();
-            return null;
-        }
+        ResponseEntity<RouteResponse> response = restTemplate.exchange(url, HttpMethod.POST, request, RouteResponse.class);
+
+        return response.getBody();
     }
 }
+
