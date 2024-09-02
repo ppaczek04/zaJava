@@ -1,72 +1,71 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
+    <meta charset="UTF-8">
     <title>Maps</title>
-    <link rel="stylesheet" type="text/css" href="/custom.css"/>
 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js" integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0" crossorigin="anonymous"></script>
-
+    <link rel="stylesheet" type="text/css" href="/custom.css"/>
 </head>
 <body>
-<div class="container bg-light justify-content-center">
-    <div class="row">
-        <div class="span6" style="float: none; margin: 0 auto;">
-            <br/>
-            <h1 class="text-center">Wybierz miasto</h1>
-            <form th:action="@{/home}" th:object="${location}" method="post" autocomplete="off" class="form-inline">
-                <div class="form-group">
-                    <input type="text" th:field="*{city}" placeholder="Miasto" class="form-control"/>
-                </div>
-                <div class="form-group">
-                    <button class="btn btn-md btn-primary btn-block" name="Submit" value="Submit" type="Submit">Zatwierdź</button>
-                </div>
-                <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#checkboxModal">
-                    Wybierz opcje
-                </button>
-            </form>
-            <br/>
-        </div>
+<div class="container-fluid p-0 d-flex h-100">
+    <div class="column-1">
+        <i class="bi bi-house-door"></i>        <!-- Ikona domu -->
+        <i class="bi bi-person"></i>            <!-- Ikona użytkownika -->
+        <i class="bi bi-gear"></i>              <!-- Ikona ustawień -->
+        <i class="bi bi-chat-dots"></i>         <!-- Ikona wiadomości -->
+        <i class="bi bi-bell"></i>              <!-- Ikona powiadomienia -->
+        <i class="bi bi-graph-up"></i>          <!-- Ikona statystyk -->
+        <i class="bi bi-calendar"></i>          <!-- Ikona kalendarza -->
+        <i class="bi bi-info-circle"></i>       <!-- Ikona informacji -->
     </div>
-</div>
-<!-- Modal -->
-<div class="modal fade" id="checkboxModal" tabindex="-1" aria-labelledby="checkboxModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="checkboxModalLabel">Wybierz opcje</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form th:action="@{/processSelections}" th:object="${selections}" method="post">
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" th:field="*{restaurant}" id="restaurant">
-                        <label class="form-check-label" for="restaurant">
-                            Restaurants
-                        </label>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" th:field="*{castles}" id="castles">
-                        <label class="form-check-label" for="castles">
-                            Castles
-                        </label>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" th:field="*{entertainment}" id="entertainment">
-                        <label class="form-check-label" for="entertainment">
-                            Entertainment
-                        </label>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zamknij</button>
-                        <button id="submitBtn" type="submit" class="btn btn-primary">Zatwierdź wybory</button>
-                    </div>
-                </form>
+    <div class="column-2">
+        <div class="row-1">
+            ZaJava
+        </div>
+        <div class="row-2">
+            <div class="map-container">
+                <!-- Formularz nad mapą -->
+                <div class="form-overlay">
+                    <form th:action="@{/home}" th:object="${location}" method="post" autocomplete="off" class="form-inline">
+                        <div class="input-group mb-3">
+                            <input type="text" th:field="*{city}" class="form-control" placeholder="Find address" aria-label="Find address">
+                            <div class="input-group-append">
+                                <button class="btn btn-outline-secondary" type="submit">
+                                    <i class="bi bi-search icon-background"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Mapa Google -->
+                <div id="map"></div>
             </div>
         </div>
     </div>
 </div>
-<div id="map"></div>
+<!--<div class="map-container">-->
+<!--    &lt;!&ndash; Formularz nad mapą &ndash;&gt;-->
+<!--    <div class="form-overlay">-->
+<!--        <form th:action="@{/home}" th:object="${location}" method="post" autocomplete="off" class="form-inline">-->
+<!--            <div class="input-group mb-3">-->
+<!--                <input type="text" th:field="*{city}" class="form-control" placeholder="Find address" aria-label="Find address">-->
+<!--                <div class="input-group-append">-->
+<!--                    <button class="btn btn-outline-secondary" type="submit">-->
+<!--                        <i class="bi bi-search icon-background"></i>-->
+<!--                    </button>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </form>-->
+<!--    </div>-->
+
+<!--    &lt;!&ndash; Mapa Google &ndash;&gt;-->
+<!--    <div id="map"></div>-->
+<!--</div>-->
+
 <script th:inline="javascript">
     /*<![CDATA[*/
     const points = /*[[${points}]]*/ [];

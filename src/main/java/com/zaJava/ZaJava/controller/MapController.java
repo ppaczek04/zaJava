@@ -47,17 +47,15 @@ public class MapController {
 
     @PostMapping(value="/processSelections")
     public Mono<String> processSelections(Selections selections, Model model) {
-        TypesLists typesLists = new TypesLists();
         model.addAttribute("selections", selections);
+        // Tutaj będzie wczytana lokalizcja z bazy danych, czy też jakos inaczej. Tego pierwszego znacznika.
         PlaceDto place = new PlaceDto();
         place.setLatitude(50.08956767480298);
         place.setLongitude(19.929814497426612);
         place.setRadius(500);
+        // ****************************
 
-        String[] types = null;
-        if(selections.isRestaurant()) {
-            types = typesLists.getFoodAndDrink();
-        }
+        String[] types = mapService.getPlacesTypes(selections);
 
         model.addAttribute(new Location("Kraków", 50.08956767480298, 19.929814497426612));
 

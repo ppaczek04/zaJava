@@ -11,36 +11,34 @@ import reactor.core.publisher.Mono;
 public class PlacesController {
 
     private final PlacesService placesService;
-    private final TypesLists typesLists;
 
-    public PlacesController(PlacesService placesService, TypesLists typesLists) {
+    public PlacesController(PlacesService placesService) {
         this.placesService = placesService;
-        this.typesLists = typesLists;
     }
 
     @PostMapping("/restaurant")
     public Mono<String> getNearbyRestaurant(@RequestBody PlaceDto request) {
-        return placesService.searchNearby(request, typesLists.getFoodAndDrink());
+        return placesService.searchNearby(request, TypesLists.getFoodAndDrink());
     }
 
     @PostMapping("/entertainment")
     public Mono<String> getNearbyEntertainment(@RequestBody PlaceDto request) {
-        return placesService.searchNearby(request, typesLists.getEntertainmentAndRecreation());
+        return placesService.searchNearby(request, TypesLists.getEntertainmentAndRecreation());
     }
 
     @PostMapping("/culture")
     public Mono<String> getNearbyCulture(@RequestBody PlaceDto request) {
-        return placesService.searchNearby(request, typesLists.getCulture());
+        return placesService.searchNearby(request, TypesLists.getCulture());
     }
 
     @PostMapping("/sport")
     public Mono<String> getNearbySport(@RequestBody PlaceDto request) {
-        return placesService.searchNearby(request, typesLists.getSport());
+        return placesService.searchNearby(request, TypesLists.getSport());
     }
 
     @PostMapping("/busStop")
     public Mono<String> getNearbyBusStop(@RequestBody PlaceDto request) {
-        return placesService.searchNearby(request, typesLists.getBusStop());
+        return placesService.searchNearby(request, TypesLists.getBusStop());
     }
 }
 
