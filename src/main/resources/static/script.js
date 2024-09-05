@@ -27,6 +27,14 @@ function initMap() {
             i += 1;
         }
     });
+    // Calculate route between the markers
+    document.getElementById("calculateRouteBtn").addEventListener("click", function() {
+        if (markers.marker1 && markers.marker2) {
+            calculateRoute(map, markers.marker1.getPosition(), markers.marker2.getPosition());
+        } else {
+            alert("Proszę wybrać dwa punkty na mapie.");
+        }
+    });
 }
 
 function addMarkers(points) {
@@ -49,3 +57,62 @@ function addMarkers(points) {
 // btn.onclick = function () {
 //     sidebar.classList.toggle('active');
 // };
+function calculateRoute(map, origin, destination) {
+    const requestBody = {
+        origin: {
+            location: {
+                latLng: {
+                    latitude: origin.lat(),
+                    longitude: origin.lng()
+                }
+            }
+        },
+        destination: {
+            location: {
+                latLng: {
+                    latitude: destination.lat(),
+                    longitude: destination.lng()
+                }
+            }
+        },
+        travelMode: 'DRIVE'
+    };
+
+
+    fetch('https://routes.googleapis.com/directions/v2:computeRoutes', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Goog-Api-Key': 'AIzaSyABfgoEg2PzuIVn-M4myjE1gNesvBHWMHU',
+            'X-Goog-FieldMask': 'routes.distanceMeters,routes.duration,routes.polyline.encodedPolyline'
+        },
+        body: JSON.stringify(requestBody)
+    })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Full response:', data);
+            if (data.routes && data.routes.length > 0) {
+                const route = data.routes[0];
+                console.log('Pełna odpowiedź:', data);
+                console.log('Odległość:', route.distanceMeters, 'meters');
+                console.log('Czas trwania:', route.duration, 'seconds');
+
+                // Decode the polyline
+                const path = google.maps.geometry.encoding.decodePath(route.polyline.encodedPolyline);
+
+                // Render the polyline on the map
+                const intermediatePath = new google.maps.Polyline({
+                    path: path,
+                    geodesic: true,
+                    strokeColor: "#FF0000",
+                    strokeOpacity: 1.0,
+                    strokeWeight: 2,
+                });
+
+                intermediatePath.setMap(map);
+            } else {
+                console.error('No routes found in the response.');
+            }
+        })
+        .catch(error => console.error('Error:', error));
+}

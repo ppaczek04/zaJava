@@ -65,6 +65,7 @@
                         </div>
                     </div>
                 </form>
+                <button id="calculateRouteBtn" class="btn btn-md btn-primary btn-block">Oblicz trasę</button>
             </div>
 
             <!-- Mapa Google -->
@@ -86,15 +87,15 @@
     const points = /*[[${points}]]*/ [];
 
     const coords = {
-        lat: parseFloat([[${location.lat}]]), //|| -89.9988,
-        lng: parseFloat([[${location.lng}]]) //|| 39.9612
+        lat: parseFloat([[${location.lat}]]),
+        lng: parseFloat([[${location.lng}]])
     };
     let city = [[${location.city}]];
     /*]]>*/
 </script>
 <script th:inline="javascript" src="/script.js"></script>
 <script th:src="@{${'https://maps.googleapis.com/maps/api/js?key=' +
-      @environment.getProperty('google.api.key') + '&callback=initMap'}}" async defer>
+      @environment.getProperty('google.api.key') + '&callback=initMap&libraries=geometry,places'}}" async defer>
 </script>
 
 </body>
