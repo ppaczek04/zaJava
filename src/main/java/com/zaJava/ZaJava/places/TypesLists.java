@@ -2,10 +2,10 @@ package com.zaJava.ZaJava.places;
 
 import org.springframework.stereotype.Service;
 
-@Service
+//@Service
 public class TypesLists {
 
-    String[] getEntertainmentAndRecreation(){
+    public static String[] getEntertainmentAndRecreation(){
         return new String[] {"amusement_center",
                 "amusement_park",
                 "aquarium",
@@ -31,7 +31,7 @@ public class TypesLists {
                 "zoo"};
     }
 
-    String[] getFoodAndDrink(){
+    public static String[] getFoodAndDrink(){
         return new String[] {"american_restaurant",
                 "bakery",
                 "bar",
@@ -73,13 +73,13 @@ public class TypesLists {
                 "vietnamese_restaurant"};
     }
 
-    String[] getCulture(){
+    public static String[] getCulture(){
         return new String[] {"art_gallery",
                 "museum",
                 "performing_arts_theater"};
     }
 
-    String[] getSport(){
+    public static String[] getSport(){
         return new String[] {"athletic_field",
                 "fitness_center",
                 "golf_course",
@@ -92,7 +92,7 @@ public class TypesLists {
                 "swimming_pool"};
     }
 
-    String[] getBusStop(){
+    public static String[] getBusStop(){
         return new String[] {"bus_station",
                 "bus_stop"};
     }

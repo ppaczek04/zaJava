@@ -3,9 +3,12 @@ package com.zaJava.ZaJava.places;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -38,5 +41,25 @@ public class PlacesMapper {
             e.printStackTrace();
             return "{}";
         }
+    }
+
+    public List<Point> parsePoints(String value) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        List<Point> points = new ArrayList<>();
+
+        try {
+            PlacesDto response = objectMapper.readValue(value, PlacesDto.class);
+
+            for (LocationDto place : response.getPlaces()) {
+                Point point = place.getLocation();
+                if (point != null) {
+                    points.add(point);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return points;
     }
 }

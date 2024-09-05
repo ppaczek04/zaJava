@@ -8,7 +8,9 @@ import lombok.Setter;
 @Setter
 @Data
 public class Selections {
-    private boolean restaurant;
-    private boolean castles;
-    private boolean entertainment;
+    private boolean foodAndDrink;
+    private boolean culture;
+    private boolean entertainmentAndRecreation;
+    private boolean sport;
+    private boolean busStop;
 }

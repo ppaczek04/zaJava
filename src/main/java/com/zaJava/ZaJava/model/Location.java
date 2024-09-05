@@ -5,6 +5,15 @@ import lombok.Data;
 @Data
 public class Location {
     private String city;
-    private String lat;
-    private String lng;
+    private double lat;
+    private double lng;
+
+    public Location(String city, double lat, double lng) {
+        this.city = city;
+        this.lat = lat;
+        this.lng = lng;
+    }
+
+    public Location() {
+    }
 }
