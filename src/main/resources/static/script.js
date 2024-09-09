@@ -16,6 +16,7 @@ function initMap() {
             const markerKey = `marker${i + 1}`;
             markers[markerKey] = new google.maps.Marker({
                 map: map,
+                color: "#C5BAF3",
                 position: event.latLng,
                 title: markerKey,
                 animation: google.maps.Animation.DROP,
@@ -34,6 +35,16 @@ function initMap() {
         } else {
             alert("Proszę wybrać dwa punkty na mapie.");
         }
+    });
+
+    document.getElementById("origAndDestPoints").addEventListener("click", function(){
+        if (markers.marker1 && markers.marker2) {
+            addRouteToDB(markers.marker1.getPosition(), markers.marker2.getPosition());
+        } else {
+            alert("Proszę wybrać dwa punkty na mapie.");
+        }
+        markers.marker1.setDraggable(false);
+        markers.marker2.setDraggable(false);
     });
 }
 
@@ -116,3 +127,34 @@ function calculateRoute(map, origin, destination) {
         })
         .catch(error => console.error('Error:', error));
 }
+
+
+function addRouteToDB(origin, destination) {
+    fetch('/route/save', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            origin: {
+                latitude: origin.lat(),
+                longitude: origin.lng()
+            },
+            destination: {
+                latitude: destination.lat(),
+                longitude: destination.lng()
+            }
+        })
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.text();
+        })
+        .then(routeId => {
+            console.log('Route ID:', routeId);  // Wyświetla id zapisanej trasy
+        })
+        .catch(error => console.error('Error saving route points:', error));
+}
+
