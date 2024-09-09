@@ -10,50 +10,90 @@
     <link rel="stylesheet" type="text/css" href="/custom.css"/>
 </head>
 <body>
-<!--<div class="container-fluid p-0 d-flex h-100">-->
     <div class="sidebar">
         <div class="top">
             <i class="bi bi-list" id="btn"></i>
         </div>
-        <ul>
-            <li>
-                <a href="#">
-                    <i class="bi bi-house-door"></i>
-                    <span class="nav-item">something</span>
-                </a>
-                <span class="tooltip">something</span>
-            </li>
-            <li>
-                <a href="#">
-                    <i class="bi bi-person"></i>
-                    <span class="nav-item">something</span>
-                </a>
-                <span class="tooltip">something</span>
-            </li>
-            <li>
-                <a href="#">
-                    <i class="bi bi-gear"></i>
-                    <span class="nav-item">something</span>
-                </a>
-                <span class="tooltip">something</span>
-            </li>
-            <li>
-                <a href="#">
-                    <i class="bi bi-chat-dots"></i>
-                    <span class="nav-item">something</span>
-                </a>
-                <span class="tooltip">something</span>
-            </li>
-        </ul>
+        <div class="flexbox">
+            <div class="form-floating">
+                <input type="text" class="form-control rounded-3" id="origin" readonly>
+                <label for="origin">Home</label>
+            </div>
+            <div class="form-floating">
+                <input type="text" class="form-control rounded-3" id="destination" readonly>
+                <label for="destination">Destination</label>
+            </div>
+            <div class="form-floating">
+                <input type="number" class="form-control rounded-3" id="radius" min="0">
+                <label for="radius">Radius</label>
+            </div>
+        </div>
+
+        <div class="lists-container">
+
+
+            <ul class="homeAndDestination">
+                <li>
+                    <a href="#">
+                        <i class="bi bi-house-door"></i>
+                    </a>
+                    <span class="tooltip">Home</span>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="bi bi-pin-map"></i>
+                    </a>
+                    <span class="tooltip">Destination</span>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="bi bi-record-circle"></i>
+                    </a>
+                    <span class="tooltip">Radius</span>
+                </li>
+            </ul>
+
+            <ul>
+                <li>
+                    <a href="#">
+                        <i class="bi bi-music-note-beamed"></i>
+                        <span class="nav-item">Entertainment</span>
+                    </a>
+                    <span class="tooltip">Entertainment</span>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="bi bi-cup-straw"></i>
+                        <span class="nav-item">Eating</span>
+                    </a>
+                    <span class="tooltip">Eating</span>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="bi bi-easel"></i>
+                        <span class="nav-item">Culture</span>
+                    </a>
+                    <span class="tooltip">Culture</span>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="bi bi-trophy"></i>
+                        <span class="nav-item">Sport</span>
+                    </a>
+                    <span class="tooltip">Sport</span>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="bi bi-bus-front"></i>
+                        <span class="nav-item">Bus stop</span>
+                    </a>
+                    <span class="tooltip">Bus Stop</span>
+                </li>
+            </ul>
+        </div>
     </div>
     <div class="main-content">
-<!--        Do przemyślenia-->
-<!--        <div class="row-1">-->
-<!--            <span class="text">ZaJava</span>-->
-<!--        </div>-->
-<!--        -->
         <div class="row-2">
-            <!-- Formularz nad mapą -->
             <div class="form-overlay">
                 <form th:action="@{/home}" th:object="${location}" method="post" autocomplete="off" class="form-inline">
                     <div class="input-group mb-3">
@@ -67,7 +107,6 @@
                 </form>
             </div>
 
-            <!-- Mapa Google -->
             <div id="map"></div>
         </div>
     </div>

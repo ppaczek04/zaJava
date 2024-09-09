@@ -23,6 +23,12 @@ function initMap() {
             });
             markers[markerKey].addListener('dragend', function () {
                 console.log(`${markers[markerKey].getTitle()} został przeniesiony na: ${markers[markerKey].getPosition()}`);
+                if (markerKey === 'marker1') {
+                    document.getElementById('origin').value = markers[markerKey].getPosition();
+                }
+                if (markerKey === 'marker2') {
+                    document.getElementById('destination').value = markers[markerKey].getPosition();
+                }
             });
             i += 1;
         }
