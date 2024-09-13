@@ -46,18 +46,29 @@ public class PlacesMapper {
     public List<Point> parsePoints(String value) {
         ObjectMapper objectMapper = new ObjectMapper();
         List<Point> points = new ArrayList<>();
+        System.out.println(value);
 
         try {
+            // Deserializowanie JSON do obiektu PlacesDto
             PlacesDto response = objectMapper.readValue(value, PlacesDto.class);
 
-            for (LocationDto place : response.getPlaces()) {
-                Point point = place.getLocation();
-                if (point != null) {
-                    points.add(point);
+            // Sprawdzanie, czy response.getPlaces() nie jest null
+            if (response != null && response.getPlaces() != null) {
+                for (LocationDto place : response.getPlaces()) {
+                    if (place != null) {
+                        Point point = place.getLocation();
+                        if (point != null) {
+                            points.add(point);
+                        }
+                    }
                 }
+            } else {
+                System.out.println("response.getPlaces() is null");
             }
         } catch (IOException e) {
+            // Logowanie błędów
             e.printStackTrace();
+            System.out.println("Error parsing JSON: " + e.getMessage());
         }
 
         return points;

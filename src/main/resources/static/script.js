@@ -1,4 +1,11 @@
 let map;
+const selections = {
+    foodAndDrink: true,
+    culture: false,
+    entertainmentAndRecreation: false,
+    sport: false,
+    busStop: false
+};
 function initMap() {
     map = new google.maps.Map(document.getElementById('map'), {
         center: coords,
@@ -52,12 +59,22 @@ function initMap() {
         markers.marker1.setDraggable(false);
         markers.marker2.setDraggable(false);
     });
+
+    document.getElementById("fetchEating").addEventListener('click', async function (event) {
+        console.log(selections);
+        console.log(place);
+        try {
+            await handleSelection(selections, place);
+        } catch (error) {
+            console.error('Error during handleSelection:', error);
+        }
+    })
 }
 
 function addMarkers(points) {
     // Można ewentualnie wyczyścić istniejące markery tutaj
     // ...
-    console.log(points);
+    console.log('POINTS: ', points, "\n");
     points.forEach(point => {
         const position = new google.maps.LatLng(point.latitude, point.longitude);
         new google.maps.Marker({
@@ -68,12 +85,63 @@ function addMarkers(points) {
     });
 }
 
-// let btn = document.querySelector('#btn');
-// let sidebar = document.querySelector('.sidebar');
-//
-// btn.onclick = function () {
-//     sidebar.classList.toggle('active');
-// };
+// function handleSelection(selections, place) {
+//     console.log('SELECTIONS:', selections, '\n\n\n\n')
+//     console.log('JSON to be sent:', JSON.stringify({ selections: selections, place: place }));
+//     // Wykonanie zapytania POST do endpointa /processSelections
+//     fetch('/processSelections', {
+//         method: 'POST',
+//         headers: {
+//             'Content-Type': 'application/json'
+//         },
+//         body: JSON.stringify({
+//             selections: selections,
+//             place: place
+//         })
+//     })
+//         .then(response => {
+//             if (!response.ok) {
+//                 throw new Error('Network response was not ok');
+//             }
+//             return response.text(); // Oczekujemy, że serwer zwróci nazwę widoku jako tekst
+//         })
+//         .then(viewName => {
+//             // Obsługa zwróconej nazwy widoku
+//             console.log('good\n', points);
+//             // Możesz wykonać dodatkowe akcje, np. nawigować do innego widoku
+//         })
+//         .catch(error => {
+//             console.error('There was a problem with the fetch operation:', error);
+//         });
+// }
+
+async function handleSelection(selections, place) {
+    console.log('SELECTIONS:', selections, '\n\n\n\n');
+    try {
+        const response = await fetch('/processSelections', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                selections: selections,
+                place: place
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+
+        const points = await response.json(); // Oczekujemy, że serwer zwróci listę punktów jako JSON
+        console.log('Otrzymane punkty:', points);
+
+        addMarkers(points); // Aktualizuje markery na mapie
+    } catch (error) {
+        console.error('There was a problem with the fetch operation:', error);
+    }
+}
+
 function calculateRoute(map, origin, destination) {
     const requestBody = {
         origin: {

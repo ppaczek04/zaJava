@@ -77,7 +77,6 @@
     top: .4rem;
     left: 50%;
     font-size: 1.2rem;
-    /*line-height: 50px;*/
     transform: translateX(-50%);
     cursor: pointer;
 }
@@ -125,20 +124,15 @@
 }
 
 .sidebar .flexbox {
-    /*display: flex;*/
     flex-direction: column;
     position: relative;
     top: 30px;
     align-content: space-between;
     gap: 10px;
-    /*opacity: 0;*/
-    /*pointer-events: none;*/
     display: none;
 }
 
 .sidebar.active .flexbox {
-    /*opacity: 1;*/
-    /*pointer-events: auto;*/
     display: flex;
 }
 
@@ -178,7 +172,6 @@
 
 #map {
     position: absolute;
-    /*z-index: 9;*/
     height: 100%;
     width: 100%;
 }

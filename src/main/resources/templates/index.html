@@ -55,7 +55,7 @@
 
             <ul>
                 <li>
-                    <a href="#">
+                    <a href="#" id="fetchEating">
                         <i class="bi bi-music-note-beamed"></i>
                         <span class="nav-item">Entertainment</span>
                     </a>
@@ -131,6 +131,13 @@
         lng: parseFloat([[${location.lng}]])
     };
     let city = [[${location.city}]];
+
+    const place = {
+        latitude: coords.lat,
+        longitude: coords.lng,
+        radius: 4000
+    }
+
     /*]]>*/
 </script>
 <script th:inline="javascript" src="/script.js"></script>
