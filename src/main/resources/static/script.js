@@ -1,12 +1,14 @@
 let map;
+let placesMarkers = [];
 const selections = {
-    foodAndDrink: true,
+    foodAndDrink: false,
     culture: false,
     entertainmentAndRecreation: false,
     sport: false,
     busStop: false
 };
 function initMap() {
+
     map = new google.maps.Map(document.getElementById('map'), {
         center: coords,
         zoom: 13
@@ -60,29 +62,83 @@ function initMap() {
         markers.marker2.setDraggable(false);
     });
 
-    document.getElementById("fetchEating").addEventListener('click', async function (event) {
-        console.log(selections);
-        console.log(place);
-        try {
-            await handleSelection(selections, place);
-        } catch (error) {
-            console.error('Error during handleSelection:', error);
-        }
-    })
+//     document.getElementById("entertainmentAndRecreation").addEventListener('click', async function () {
+//         console.log("\n\n\n entertainmentAndRecreation \n\n\n");
+//         selections.entertainmentAndRecreation = true;
+//         await handleSelection(selections, place);
+//         selections.entertainmentAndRecreation = false;
+//     });
+//
+//
+//     document.getElementById("foodAndDrink").addEventListener('click', async function () {
+//         console.log("\n\n\n foodAndDrink \n\n\n");
+//         selections.foodAndDrink = true;
+//         await handleSelection(selections, place);
+//         selections.foodAndDrink = false;
+//     });
+//
+//
+//     document.getElementById("culture").addEventListener('click', async function () {
+//         console.log("\n\n\n culture \n\n\n");
+//         selections.culture = true;
+//         await handleSelection(selections, place);
+//         selections.culture = false;
+//     });
+//
+//     document.getElementById("sport").addEventListener('click', async function () {
+//         console.log("\n\n\n sport \n\n\n");
+//         selections.sport = true;
+//         await handleSelection(selections, place);
+//         selections.sport = false;
+//     });
+//
+//     document.getElementById("busStop").addEventListener('click', async function () {
+//         console.log("\n\n\n busStop \n\n\n");
+//         selections.busStop = true;
+//         await handleSelection(selections, place);
+//         selections.busStop = false;
+//     });
+// }
+
+document.getElementById("entertainmentAndRecreation").addEventListener('click', () => handleButtonClick('entertainment'));
+document.getElementById("foodAndDrink").addEventListener('click', () => handleButtonClick('foodAndDrink'));
+document.getElementById("culture").addEventListener('click', () => handleButtonClick('culture'));
+document.getElementById("sport").addEventListener('click', () => handleButtonClick('sport'));
+document.getElementById("busStop").addEventListener('click', () => handleButtonClick('busStop'));
 }
 
+const handleButtonClick = async (key) => {
+    console.log("\n\n", selections, "\n\n")
+    selections[key] = true;
+    console.log("\n\n", selections, "\n\n")
+    try {
+        await handleSelection(selections, place);
+    } catch (error) {
+        console.error('Error during handleSelection:', error);
+    } finally {
+        selections[key] = false;
+    }
+};
+
+
 function addMarkers(points) {
-    // Można ewentualnie wyczyścić istniejące markery tutaj
-    // ...
+    clearPlacesMarkers();
+
     console.log('POINTS: ', points, "\n");
     points.forEach(point => {
         const position = new google.maps.LatLng(point.latitude, point.longitude);
-        new google.maps.Marker({
+        const marker = new google.maps.Marker({
             position: position,
             map: map,
             title: 'Marker'
         });
+        placesMarkers.push(marker);
     });
+}
+
+function clearPlacesMarkers() {
+    placesMarkers.forEach(marker => marker.setMap(null));
+    placesMarkers = [];
 }
 
 // function handleSelection(selections, place) {
