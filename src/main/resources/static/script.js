@@ -45,10 +45,11 @@ async function initMap() {
             });
             markers[markerKey].addListener('dragend', function () {
                 console.log(`${markers[markerKey].title} został przeniesiony na: ${markers[markerKey].position.lat}, ${markers[markerKey].position.lng}`);
+                const position = markers[markerKey].position;
                 if (markerKey === 'marker1') {
                     document.getElementById('origin').value = `${markers[markerKey].position.lat}, ${markers[markerKey].position.lat}`;
-                    place.latitude = markers[markerKey].position.lat();
-                    place.longitude = markers[markerKey].position.lng();
+                    place.latitude = position.lat;
+                    place.longitude = position.lng;
                 }
                 if (markerKey === 'marker2') {
                     document.getElementById('destination').value = `${markers[markerKey].position.lat}, ${markers[markerKey].position.lat}`;
@@ -80,9 +81,9 @@ async function initMap() {
 
     document.getElementById("fetchEating").addEventListener('click', async function (event) {
         console.log(selections);
-        console.log(place);
         try {
             place.radius = Math.floor(document.getElementById('radius').value);
+            map.setCenter(new google.maps.LatLng(place.latitude, place.longitude));
             await handleSelection(selections, place);
         } catch (error) {
             console.error('Error during handleSelection:', error);
