@@ -20,7 +20,8 @@ public class LegController {
     }
 
     @PostMapping("/save")
-    public ResponseEntity<String> save(@RequestBody LegRequest legRequest) {
-        return legService.save(legRequest);
+    public ResponseEntity<Integer> saveLeg(@RequestBody LegRequest legRequest) {
+        Integer routeId = legService.save(legRequest);
+        return ResponseEntity.ok(routeId);
     }
 }

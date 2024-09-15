@@ -5,7 +5,6 @@ import com.zaJava.ZaJava.model.MapPoint;
 import com.zaJava.ZaJava.repositories.LegRepository;
 import com.zaJava.ZaJava.repositories.MapPointRepository;
 import com.zaJava.ZaJava.routes.LegRequest;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,7 +18,7 @@ public class LegService {
         this.legRepository = legRepository;
         this.mapPointRepository = mapPointRepository;
     }
-    public ResponseEntity<String> save(LegRequest legRequest) {
+    public int save(LegRequest legRequest) {
         MapPoint origin = MapPoint.builder()
                 .latitude(legRequest.getOrigin().getLatitude())
                 .longitude(legRequest.getOrigin().getLongitude())
@@ -44,6 +43,6 @@ public class LegService {
         mapPointRepository.save(origin);
         mapPointRepository.save(destination);
 
-        return ResponseEntity.ok("Points saved successfully");
+        return leg.getId();
     }
 }
