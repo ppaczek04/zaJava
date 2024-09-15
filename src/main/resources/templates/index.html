@@ -140,10 +140,10 @@
 
     /*]]>*/
 </script>
-<script th:inline="javascript" src="/script.js"></script>
-<script async defer th:src="@{${'https://maps.googleapis.com/maps/api/js?key=' +
-      @environment.getProperty('google.api.key') + '&callback=initMap&libraries=geometry,places,marker'}}">
-</script>
+    <script th:inline="javascript" src="/script.js"></script>
+    <script async defer th:src="@{${'https://maps.googleapis.com/maps/api/js?key=' +
+        @environment.getProperty('google.api.key') + '&callback=initMap&libraries=geometry,places,marker'}}">
+    </script>
 
 </body>
 </html>
