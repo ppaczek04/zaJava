@@ -4,7 +4,7 @@ import com.zaJava.ZaJava.model.MapPoint;
 import com.zaJava.ZaJava.model.Route;
 import com.zaJava.ZaJava.repositories.MapPointRepository;
 import com.zaJava.ZaJava.repositories.RouteRepository;
-import com.zaJava.ZaJava.routes.RouteRequest;
+import com.zaJava.ZaJava.requests.RouteRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

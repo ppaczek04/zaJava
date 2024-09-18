@@ -1,4 +1,4 @@
-package com.zaJava.ZaJava.routes;
+package com.zaJava.ZaJava.requests;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

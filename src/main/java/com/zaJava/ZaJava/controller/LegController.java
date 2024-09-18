@@ -1,6 +1,6 @@
 package com.zaJava.ZaJava.controller;
 
-import com.zaJava.ZaJava.routes.LegRequest;
+import com.zaJava.ZaJava.requests.LegRequest;
 import com.zaJava.ZaJava.service.LegService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

@@ -46,7 +46,7 @@ public class MapController {
         model.addAttribute("points", new ArrayList<>());
         return "index.html";
     }
-
+  
 //    @PostMapping(value="/processSelections")
 //    public Mono<Void> processSelections(Selections selections, PlaceDto place, Model model) {
 //        model.addAttribute("selections", selections);

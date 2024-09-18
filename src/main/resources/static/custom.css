@@ -69,8 +69,6 @@
     width: 250px;
 }
 
-
-
 .sidebar #btn {
     position: absolute;
     color: white;
@@ -110,6 +108,7 @@
 }
 
 
+
 .sidebar ul li a:hover ~ .tooltip {
     opacity: 1;
 }
@@ -140,6 +139,21 @@
     display: none;
 }
 
+/*.modal {*/
+/*    background-color: rgba(0, 0, 0, 0.3);*/
+/*    position: fixed;*/
+/*    display: flex;*/
+/*    align-items: center;*/
+/*    justify-content: center;*/
+/*    opacity: 0;*/
+/*    pointer-events: none;*/
+/*    top: 0;*/
+/*    left: 0;*/
+/*    z-index: 12;*/
+/*    height: 100vh;*/
+/*    width: 100vw;*/
+/*}*/
+
 .main-content {
     position: relative;
     background-color: pink;
@@ -148,7 +162,6 @@
     left: 80px;
     transition: all 0.5s ease;
     width: calc(100% - 80px);
-
     display: flex;
     flex-direction: column;
 }
@@ -175,3 +188,4 @@
     height: 100%;
     width: 100%;
 }
+
