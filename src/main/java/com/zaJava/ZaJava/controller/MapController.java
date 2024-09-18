@@ -46,6 +46,48 @@ public class MapController {
         model.addAttribute("points", new ArrayList<>());
         return "index.html";
     }
+  
+//    @PostMapping(value="/processSelections")
+//    public Mono<Void> processSelections(Selections selections, PlaceDto place, Model model) {
+//        model.addAttribute("selections", selections);
+//        // Tutaj będzie wczytana lokalizcja z bazy danych, czy też jakos inaczej. Tego pierwszego znacznika.
+////        PlaceDto place = new PlaceDto();
+////        place.setLatitude(50.08956767480298);
+////        place.setLongitude(19.929814497426612);
+////        place.setRadius(500);
+//        // ****************************
+//
+//        String[] types = mapService.getPlacesTypes(selections);
+//
+////        model.addAttribute(new Location("Kraków", 50.08956767480298, 19.929814497426612));
+//
+//        return placesService.searchNearby(place, types)
+//                .doOnNext(result -> {
+//                    List<Point> points = placesMapper.parsePoints(result);
+//                    model.addAttribute("points", points);
+//                })
+//                .then();
+//    }
+
+//    @PostMapping(value = "/processSelections")
+//    public String processSelections(@RequestBody ProcessSelectionsRequest request,
+//                                    Model model) {
+//        model.addAttribute("selections", request.getSelections());
+//        System.out.println(request.getSelections().toString() + "\n");
+//
+//        String[] types = mapService.getPlacesTypes(request.getSelections());
+//        model.addAttribute(new Location("Kraków", 50.08956767480298, 19.929814497426612));
+//        System.out.print(request.getPlace().getRadius() + " " + request.getPlace().getLatitude() + " " + request.getPlace().getLongitude() + "\n");
+//        System.out.print(Arrays.toString(types));
+//
+//        return placesService.searchNearby(request.getPlace(), types)
+//                .map(result -> {
+//                    List<Point> points = placesMapper.parsePoints(result);
+//                    model.addAttribute("points", points);
+//                    return "index";
+//                })
+//                .block();
+//    }
 
     @PostMapping(value = "/processSelections")
     @ResponseBody

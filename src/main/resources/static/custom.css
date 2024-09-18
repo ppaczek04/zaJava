@@ -108,6 +108,7 @@
 }
 
 
+
 .sidebar ul li a:hover ~ .tooltip {
     opacity: 1;
 }
