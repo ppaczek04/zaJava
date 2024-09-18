@@ -1,5 +1,6 @@
 let map;
 let placesMarkers = {};
+let placesInfoWindows = {};
 const selections = {
     foodAndDrink: false,
     culture: false,
@@ -7,6 +8,11 @@ const selections = {
     sport: false,
     busStop: false
 };
+
+// const pinBackground = new PinElement({
+//     background: "#FBBC04",
+// });
+
 async function initMap() {
     let startPlace;
     map = new google.maps.Map(document.getElementById('map'), {
@@ -18,9 +24,6 @@ async function initMap() {
     let markers = {};
     let i = 0;
 
-    if (points.length > 0) {
-        addMarkers(points);
-    }
 
     map.addListener('click', function (event) {
         if (i < 2) {
@@ -136,8 +139,103 @@ function addMarkers(points) {
             title: placeKey,
             // content: pinSvg
         });
+        placesInfoWindows[placeKey] = new google.maps.InfoWindow({
+            content: `
+                <head>
+                    <title>info-window</title>
+                    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.8.1/font/bootstrap-icons.min.css" rel="stylesheet">
+                </head>
+                <body>
+                <div style="
+                                padding: 10px;
+                              ">
+                    <style>
+                        .gm-style-iw-chr {display: none;}
+                        .info-window { padding: 10px; }
+                        .info-header { display: flex; justify-content: space-between; align-items: center; }
+                        .info-place { display: flex; align-items: center; }
+                        .bi-geo-alt-fill { margin-right: 8px; color: #7600FF}
+                        .info-distance { color: gray; }
+                        .info-details { margin-top: 10px;}
+                        .info-hours { margin-top: 10px; color: gray; }
+                        .info-buttons { margin-top: 10px; display: flex; justify-content: space-between; }
+                        .button {background-color: #7600FF; color: white; border: none; padding: 5px 10px; border-radius: 5px; font-size: 14px; cursor: pointer; transition: background-color 0.3s ease, transform 0.3s ease;}
+                        .button:hover {background-color: #5700CC; transform: scale(1.1);}
+                    </style>
+                
+                    <div class="info-window">
+                        <div class="info-header">
+                            <div class="info-place">
+                                <i class="bi bi-geo-alt-fill"></i>
+                                <div><strong>Nazwa Miejsca</strong></div>
+                            </div>
+                            <div class="info-distance">1.5km</div>
+                        </div>
+                
+                        <div class="info-details">
+                            informacjeinformacje
+                        </div>
+                        
+                        <div class="info-hours">
+                            <strong>Godziny otwarcia</strong>: Mon - Fri 9:00 AM to 5:00 PM
+                        </div>
+                        
+                        <div class="info-buttons">
+                            <button class="button" id="close-button">Close</button>
+                            <button class="button" id="select-button">Select</button>
+                        </div>
+                    </div>
+                </div>
+                </body>
+            `,
+            maxWidth: 250
+        });
+
+
         placesMarkers[placeKey].addListener('click', function () {
             console.log(`Marker ${placeKey} clicked`);
+            for(const key in placesInfoWindows) {
+                if (placesInfoWindows[key].isOpen) {
+                    document.getElementById('close-button').click()
+                }
+            }
+            placesInfoWindows[placeKey].open({
+                anchor: placesMarkers[placeKey],
+                map: map,
+            });
+
+            google.maps.event.addListenerOnce(placesInfoWindows[placeKey], 'domready', function () {
+                const closeButton = document.getElementById('close-button');
+                const selectButton = document.getElementById('select-button');
+
+                function handleButtonClick(event) {
+                    if (event.target.id === 'close-button') {
+                        selectButton.removeEventListener('click', handleButtonClick);
+                        placesInfoWindows[placeKey].close();
+                    } else if (event.target.id === 'select-button') {
+                        console.log('Select button clicked!');
+                        const position = placesMarkers[placeKey].position;
+                        placesMarkers[placeKey].map = null;
+
+                        // const pinBackground = new PinElement({
+                        //     background: "#FBBC04",
+                        // });
+
+                        placesMarkers[placeKey] = new AdvancedMarkerElement({
+                            map: map,
+                            position: {lat: position.lat(), lng: position.lng()},
+                            content: pinBackground.element,
+                        });
+                    }
+                }
+
+                closeButton.removeEventListener('click', handleButtonClick);
+                selectButton.removeEventListener('click', handleButtonClick);
+
+                closeButton.addEventListener('click', handleButtonClick);
+                selectButton.addEventListener('click', handleButtonClick);
+            });
+
             });
             i += 1;
     });
