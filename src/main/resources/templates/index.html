@@ -30,8 +30,6 @@
         </div>
 
         <div class="lists-container">
-
-
             <ul class="homeAndDestination">
                 <li>
                     <a href="#">
@@ -52,8 +50,14 @@
                     <span class="tooltip">Radius</span>
                 </li>
             </ul>
-
             <ul>
+                <li>
+                    <a href="#" id="origAndDestPoints">
+                        <i class="bi bi-check-square"></i>
+                        <span class="nav-item">Confirm</span>
+                    </a>
+                    <span class = "tooltip">Confirm</span>
+                </li>
                 <li>
                     <a href="#" id="fetchEating">
                         <i class="bi bi-music-note-beamed"></i>
@@ -97,7 +101,7 @@
             <div class="form-overlay">
                 <form th:action="@{/home}" th:object="${location}" method="post" autocomplete="off" class="form-inline">
                     <div class="input-group mb-3">
-                        <input type="text" th:field="*{city}" class="form-control" placeholder="Find address" aria-label="Find address">
+                        <input type="text" th:field="*{city}" class="form-control" placeholder="Find city" aria-label="Find address">
                         <div class="input-group-append">
                             <button class="btn btn-outline-secondary" type="submit">
                                 <i class="bi bi-search icon-background"></i>
@@ -106,9 +110,7 @@
                     </div>
                 </form>
                 <button id="calculateRouteBtn" class="btn btn-md btn-primary btn-block">Oblicz trasę</button>
-                <button id="origAndDestPoints" class="btn btn-md btn-primary btn-block">Zatwierdź punkt początkowy i końcowy</button>
             </div>
-
             <div id="map"></div>
         </div>
     </div>
@@ -135,7 +137,7 @@
     const place = {
         latitude: coords.lat,
         longitude: coords.lng,
-        radius: 4000
+        radius: 1500
     }
 
     /*]]>*/

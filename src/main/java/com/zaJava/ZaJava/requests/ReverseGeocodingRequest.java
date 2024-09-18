@@ -1,4 +1,4 @@
-package com.zaJava.ZaJava.routes;
+package com.zaJava.ZaJava.requests;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -7,9 +7,8 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class RouteRequest {
-    private LegRequest.LocationDTO origin;
-    private LegRequest.LocationDTO destination;
+public class ReverseGeocodingRequest {
+    private LocationDTO point;
 
     @Data
     @NoArgsConstructor
@@ -19,3 +18,4 @@ public class RouteRequest {
         private double longitude;
     }
 }
+

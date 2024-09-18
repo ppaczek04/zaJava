@@ -1,6 +1,6 @@
 package com.zaJava.ZaJava.controller;
 
-import com.zaJava.ZaJava.routes.RouteRequest;
+import com.zaJava.ZaJava.requests.RouteRequest;
 import com.zaJava.ZaJava.service.RouteService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

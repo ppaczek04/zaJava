@@ -4,7 +4,7 @@ import com.zaJava.ZaJava.model.Leg;
 import com.zaJava.ZaJava.model.MapPoint;
 import com.zaJava.ZaJava.repositories.LegRepository;
 import com.zaJava.ZaJava.repositories.MapPointRepository;
-import com.zaJava.ZaJava.routes.LegRequest;
+import com.zaJava.ZaJava.requests.LegRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
