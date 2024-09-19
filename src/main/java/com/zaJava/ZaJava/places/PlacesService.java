@@ -38,7 +38,8 @@ public class PlacesService {
                 .header(
                         "X-Goog-FieldMask",
 //                        "places.displayName.text",
-                        "places.location"
+                        "places.location",
+                                     "places.id"
 //                        "places.rating",
 //                        "places.websiteUri",
 //                        "places.regularOpeningHours.weekdayDescriptions"

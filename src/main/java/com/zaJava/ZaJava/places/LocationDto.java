@@ -8,6 +8,7 @@ import lombok.Setter;
 @Setter
 public class LocationDto {
     private Point location;
+    private String id;
 
 }
 

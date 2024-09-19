@@ -57,6 +57,7 @@ public class PlacesMapper {
                 for (LocationDto place : response.getPlaces()) {
                     if (place != null) {
                         Point point = place.getLocation();
+                        point.setPlaceId(place.getId());
                         if (point != null) {
                             points.add(point);
                         }
