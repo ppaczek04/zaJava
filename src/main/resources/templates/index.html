@@ -10,6 +10,24 @@
     <link rel="stylesheet" type="text/css" href="/custom.css"/>
 </head>
 <body>
+    <div id="modal">
+        <div class="modal-content">
+            <div class="header">
+                <h2>Your journey</h2>
+            </div>
+            <div class="copy">
+                <ul id="dynamic-list"></ul>
+            </div>
+            <div class="data">
+                <p>Total time: <span id="total-time"></span></p>
+                <p>Total distance: <span id="total-distance"></span></p>
+            </div>
+            <div class="cf footer">
+                <a href="#" class="btn">Close</a>
+            </div>
+        </div>
+        <div class="overlay"></div>
+    </div>
     <div class="sidebar">
         <div class="top">
             <i class="bi bi-list" id="btn"></i>
@@ -17,14 +35,17 @@
         <div class="flexbox">
             <div class="form-floating">
                 <input type="text" class="form-control rounded-3" id="origin" readonly>
+                <button class="submit-btn" id="origAndDestPoints">&#10003;</button>
                 <label for="origin">Home</label>
             </div>
             <div class="form-floating">
                 <input type="text" class="form-control rounded-3" id="destination" readonly>
+                <button class="submit-btn">&#10003;</button>
                 <label for="destination">Destination</label>
             </div>
             <div class="form-floating">
                 <input type="number" class="form-control rounded-3" id="radius" min="0">
+                <button class="submit-btn">&#10003;</button>
                 <label for="radius">Radius</label>
             </div>
         </div>
@@ -50,14 +71,16 @@
                     <span class="tooltip">Radius</span>
                 </li>
             </ul>
-            <ul>
-                <li>
-                    <a href="#" id="origAndDestPoints">
-                        <i class="bi bi-check-square"></i>
-                        <span class="nav-item">Confirm</span>
-                    </a>
-                    <span class = "tooltip">Confirm</span>
-                </li>
+<!--            <ul>-->
+<!--                <li>-->
+<!--                    <a href="#" id="origAndDestPoints">-->
+<!--                        <i class="bi bi-check-square"></i>-->
+<!--                        <span class="nav-item">Confirm</span>-->
+<!--                    </a>-->
+<!--                    <span class = "tooltip">Confirm</span>-->
+<!--                </li>-->
+<!--            </ul>-->
+            <ul class="types">
                 <li>
                     <a href="#" id="entertainmentAndRecreation">
                         <i class="bi bi-music-note-beamed"></i>
@@ -92,6 +115,15 @@
                         <span class="nav-item">Bus stop</span>
                     </a>
                     <span class="tooltip">Bus Stop</span>
+                </li>
+            </ul>
+            <ul class="planner">
+                <li>
+                    <a href="#modal">
+                        <i class="bi bi-map"></i>
+                        <span class="nav-item">Planner</span>
+                    </a>
+                    <span class="tooltip">See your current checkpoints</span>
                 </li>
             </ul>
         </div>

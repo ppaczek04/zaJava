@@ -8,7 +8,11 @@ const selections = {
     sport: false,
     busStop: false
 };
-let mainCircle
+let mainCircle;
+let listItems = [];
+let current_total_time;
+let current_total_distance;
+
 
 async function initMap() {
     map = new google.maps.Map(document.getElementById('map'), {
@@ -19,6 +23,8 @@ async function initMap() {
     });
 
     setDefaultRadius(1500);
+    document.getElementById('total-time').textContent = '0';
+    document.getElementById('total-distance').textContent = '0';
     document.getElementById('origin').value = "Click on the map";
     document.getElementById('destination').value = "Click on the map";
 
@@ -32,8 +38,17 @@ async function initMap() {
     });
 
     // Actions after confirming origin and destination points
-    document.getElementById("origAndDestPoints").addEventListener("click", function () {
+    document.getElementById("origAndDestPoints").addEventListener("click", async function () {
         routeId = getRouteId(markers);
+        const address = await GetAddress(markers.marker1.position.lat, markers.marker1.position.lng);
+        current_total_time = parseInt(document.getElementById('total-time').textContent, 10);
+        current_total_time += 1;
+        document.getElementById('total-time').textContent = current_total_time;
+        current_total_distance = parseInt(document.getElementById('total-distance').textContent, 10);
+        current_total_distance += 1;
+        document.getElementById('total-distance').textContent = current_total_distance;
+        listItems.push(address);
+        renderList();
         markers.marker1.gmpDraggable = false;
         markers.marker2.gmpDraggable = false;
     });
@@ -456,4 +471,16 @@ async function GetAddress(latitude, longitude) {
     }
 }
 
+
+function renderList() {
+    const list = document.getElementById('dynamic-list');
+    list.innerHTML = '';
+    listItems.forEach(item => {
+        const li = document.createElement('li');
+        const p = document.createElement('p');
+        p.textContent = item;
+        li.appendChild(p);
+        list.appendChild(li);
+    });
+}
 
