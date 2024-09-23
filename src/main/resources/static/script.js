@@ -9,6 +9,10 @@ const selections = {
     busStop: false
 };
 let mainCircle;
+let testCircle;
+let listItems = [];
+let current_total_time;
+let current_total_distance;
 let mainMarker;
 const SelectedPlaces = {};
 
@@ -21,6 +25,8 @@ async function initMap() {
     });
 
     setDefaultRadius(1500);
+    document.getElementById('total-time').textContent = '0';
+    document.getElementById('total-distance').textContent = '0';
     document.getElementById('origin').value = "Click on the map";
     document.getElementById('destination').value = "Click on the map";
 
@@ -32,13 +38,41 @@ async function initMap() {
     document.getElementById("calculateRouteBtn").addEventListener("click", function () {
         drawPolyline(markers);
     });
+    document.getElementById("test-radius").addEventListener("mouseover", function(){
+        if(testCircle) { testCircle.setMap(null); }
+        testCircle = addCircle(Math.floor(document.getElementById('radius').value));
+    });
+    document.getElementById("test-radius").addEventListener("mouseout", function(){
+        if(testCircle) { testCircle.setMap(null); }
+    });
 
     // Actions after confirming origin and destination points
-    document.getElementById("origAndDestPoints").addEventListener("click", function () {
-        routeId = getRouteId(markers);
+    document.getElementById("submit-origin").addEventListener("click", async function () {
+        const address = await GetAddress(markers.marker1.position.lat, markers.marker1.position.lng);
+        listItems.push(address);
+        renderList();
         markers.marker1.gmpDraggable = false;
+    });
+    document.getElementById("submit-destination").addEventListener("click", async function () {
+        routeId = await getRouteId(markers);
+        current_total_time = parseInt(document.getElementById('total-time').textContent, 10);
+        current_total_time += 1;
+        document.getElementById('total-time').textContent = current_total_time;
+        current_total_distance = parseInt(document.getElementById('total-distance').textContent, 10);
+        current_total_distance += 1;
+        document.getElementById('total-distance').textContent = current_total_distance;
         markers.marker2.gmpDraggable = false;
     });
+
+    document.getElementById("link").addEventListener("click", async function () {
+        if(routeId){
+            let routeCoords = await getRouteCoords(routeId);
+            let link = generateGoogleMapsLink(routeCoords);
+            console.log("Link do Google Maps:", link);
+            window.open(link, "_blank");
+        }
+    });
+
     handleSidebarButtons();
 }
 
@@ -406,40 +440,42 @@ async function calculateDistance(origin, destination) {
     console.log('Information: ', distance);
     return distance;
 }
+async function addRouteToDB(origin, destination) {
+    try {
+        const response = await fetch('/route/save', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
 
-function addRouteToDB(origin, destination) {
-    let Id;
-    fetch('/route/save', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            origin: {
-                latitude: origin.lat,
-                longitude: origin.lng,
-                name: "origin"
             },
-            destination: {
-                latitude: destination.lat,
-                longitude: destination.lng,
-                name: "destination"
-            }
-        })
-    })
-        .then(response => {                     // response is an id of a route (for now)
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.text();
-        })
-        .then(routeId => {
-            console.log('Route ID:', routeId);
-            Id = routeId;
-        })
-        .catch(error => console.error('Error saving route points:', error));
-    return Id;
+            body: JSON.stringify({
+                origin: {
+                    latitude: origin.lat,
+                    longitude: origin.lng,
+                    name: "origin"
+                },
+                destination: {
+                    latitude: destination.lat,
+                    longitude: destination.lng,
+                    name: "destination"
+                }
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+
+        const routeId = await response.text();
+        console.log('Route ID:', routeId);
+
+        return routeId;
+    } catch (error) {
+        console.error('Error saving route points:', error);
+        return null;
+    }
 }
+
 
 // function addLegToDB(origin, destination, polyline) {
 //     fetch('/leg/save', {
@@ -456,7 +492,8 @@ function addRouteToDB(origin, destination) {
 //                 latitude: destination.lat(),
 //                 longitude: destination.lng()
 //             },
-//             polyline: polyline
+//             polyline: polyline,
+//             routeId: routeId
 //         })
 //     })
 //         .then(response => {
@@ -466,7 +503,7 @@ function addRouteToDB(origin, destination) {
 //             return response.text();
 //         })
 //         .then(routeId => {
-//             console.log('Route ID:', legId);  // Wyświetla id zapisanej trasy
+//             console.log('Leg ID:', legId);  // Wyświetla id zapisanej trasy
 //         })
 //         .catch(error => console.error('Error saving route points:', error));
 // }
@@ -579,6 +616,67 @@ function getInfoWindowContent(placeName, information, openingHours, distance) {
             `
 }
 
+function renderList() {
+    const list = document.getElementById('dynamic-list');
+    list.innerHTML = '';
+    listItems.forEach(item => {
+        const li = document.createElement('li');
+        const p = document.createElement('p');
+        p.textContent = item;
+        li.appendChild(p);
+        list.appendChild(li);
+    });
+}
+
+function generateGoogleMapsLink(points, travelMode = "driving") {
+    if (points.length < 2) {
+        throw new Error("Musisz podać co najmniej dwa punkty: początkowy i końcowy.");
+    }
+
+    const origin = `${points[0][0]},${points[0][1]}`;
+    const destination = `${points[points.length - 1][0]},${points[points.length - 1][1]}`;
+
+    let waypointsParam = "";
+    if (points.length > 2) {
+        const waypoints = points.slice(1, points.length - 1)
+            .map(point => `${point[0]},${point[1]}`)
+            .join('|');
+        waypointsParam = `&waypoints=${waypoints}`;
+    }
+
+    return `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}${waypointsParam}&travelmode=${travelMode}`;
+}
+
+async function getRouteCoords(routeId) {
+    let routeCoords = [];
+    try {
+        const response = await fetch('/mappoint/getbyrouteid', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                routeId: routeId
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+
+        const data = await response.json();
+        console.log('Route coordinates:', data);
+
+        data.forEach(coords => {
+            routeCoords.push([coords[0], coords[1]]);
+        });
+
+        return routeCoords;
+    } catch (error) {
+        console.error('Error getting route points:', error);
+        return [];
+    }
+}
 function getPinSvgString(type) {
     if(type === "unselected"){
         return '<svg width="45px" height="45px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">\n' + '  <defs>\n' + '    <path id="marker-a" d="M5,2 C4.44771525,2 4,1.55228475 4,1 C4,0.44771525 4.44771525,0 5,0 C5.55228475,0 6,0.44771525 6,1 C6,1.55228475 5.55228475,2 5,2 Z M11.1660156,4.88720703 C11.5270182,4.88753255 11.0398763,6.09019866 9.70458984,8.49520536 C8.36930339,10.9002121 6.80110677,12.8476111 5,14.3374023 C3.47981771,13.1349284 1.89029948,11.2677409 0.231445312,8.73583984 C1.1640625,9.98632812 3.83496094,10.6665039 5.96948242,7.01611328 C7.39249674,4.58251953 9.12467448,3.87288411 11.1660156,4.88720703 Z"/>\n' + '    <path id="marker-c" d="M8,22 C5.23620113,22 0,12.5164513 0,8.162063 C0,3.65933791 3.57653449,0 8,0 C12.4234655,0 16,3.65933791 16,8.162063 C16,12.5164513 10.7637989,22 8,22 Z M8,20 C8.39916438,20 9.97421309,18.1222923 11.3773555,15.5809901 C12.9364167,12.7572955 14,9.79929622 14,8.162063 C14,4.75379174 11.308521,2 8,2 C4.69147901,2 2,4.75379174 2,8.162063 C2,9.79929622 3.06358328,12.7572955 4.62264452,15.5809901 C6.02578691,18.1222923 7.60083562,20 8,20 Z M8,12 C5.790861,12 4,10.209139 4,8 C4,5.790861 5.790861,4 8,4 C10.209139,4 12,5.790861 12,8 C12,10.209139 10.209139,12 8,12 Z M8,10 C9.1045695,10 10,9.1045695 10,8 C10,6.8954305 9.1045695,6 8,6 C6.8954305,6 6,6.8954305 6,8 C6,9.1045695 6.8954305,10 8,10 Z"/>\n' + '  </defs>\n' + '  <g fill="none" fill-rule="evenodd" transform="translate(4 1)">\n' + '    <g transform="translate(3 7)">\n' + '      <mask id="marker-b" fill="#ffffff">\n' + '        <use xlink:href="#marker-a"/>\n' + '      </mask>\n' + '      <use fill="#D8D8D8" xlink:href="#marker-a"/>\n' + '      <g fill="#FFA0A0" mask="url(#marker-b)">\n' + '        <rect width="24" height="24" transform="translate(-7 -8)"/>\n' + '      </g>\n' + '    </g>\n' + '    <mask id="marker-d" fill="#ffffff">\n' + '      <use xlink:href="#marker-c"/>\n' + '    </mask>\n' + '    <use fill="#000000" fill-rule="nonzero" xlink:href="#marker-c"/>\n' + '    <g fill="#7600FF" mask="url(#marker-d)">\n' + '      <rect width="24" height="24" transform="translate(-4 -1)"/>\n' + '    </g>\n' + '  </g>\n' + '</svg>';

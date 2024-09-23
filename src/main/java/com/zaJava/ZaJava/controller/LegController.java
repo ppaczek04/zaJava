@@ -21,7 +21,7 @@ public class LegController {
 
     @PostMapping("/save")
     public ResponseEntity<Integer> saveLeg(@RequestBody LegRequest legRequest) {
-        Integer routeId = legService.save(legRequest);
-        return ResponseEntity.ok(routeId);
+        Integer legId = legService.save(legRequest);
+        return ResponseEntity.ok(legId);
     }
 }
