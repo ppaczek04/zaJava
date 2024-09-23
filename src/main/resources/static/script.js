@@ -46,22 +46,22 @@ async function initMap() {
 
     // Actions after confirming origin and destination points
     document.getElementById("submit-origin").addEventListener("click", async function () {
-        routeId = await getRouteId(markers);
         const address = await GetAddress(markers.marker1.position.lat, markers.marker1.position.lng);
+        listItems.push(address);
+        renderList();
+        markers.marker1.gmpDraggable = false;
+    });
+    document.getElementById("submit-destination").addEventListener("click", async function () {
+        routeId = await getRouteId(markers);
         current_total_time = parseInt(document.getElementById('total-time').textContent, 10);
         current_total_time += 1;
         document.getElementById('total-time').textContent = current_total_time;
         current_total_distance = parseInt(document.getElementById('total-distance').textContent, 10);
         current_total_distance += 1;
         document.getElementById('total-distance').textContent = current_total_distance;
-        listItems.push(address);
-        renderList();
-        markers.marker1.gmpDraggable = false;
         markers.marker2.gmpDraggable = false;
     });
-    // document.getElementById("submit-origin").addEventListener("click", async function () {
-    //
-    // }
+
     document.getElementById("link").addEventListener("click", async function () {
         if(routeId){
             let routeCoords = await getRouteCoords(routeId);
