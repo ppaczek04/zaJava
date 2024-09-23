@@ -9,10 +9,10 @@ const selections = {
     busStop: false
 };
 let mainCircle;
+let testCircle;
 let listItems = [];
 let current_total_time;
 let current_total_distance;
-
 
 async function initMap() {
     map = new google.maps.Map(document.getElementById('map'), {
@@ -36,10 +36,17 @@ async function initMap() {
     document.getElementById("calculateRouteBtn").addEventListener("click", function () {
         drawPolyline(markers);
     });
+    document.getElementById("test-radius").addEventListener("mouseover", function(){
+        if(testCircle) { testCircle.setMap(null); }
+        testCircle = addCircle(Math.floor(document.getElementById('radius').value));
+    });
+    document.getElementById("test-radius").addEventListener("mouseout", function(){
+        if(testCircle) { testCircle.setMap(null); }
+    });
 
     // Actions after confirming origin and destination points
-    document.getElementById("origAndDestPoints").addEventListener("click", async function () {
-        routeId = getRouteId(markers);
+    document.getElementById("submit-origin").addEventListener("click", async function () {
+        routeId = await getRouteId(markers);
         const address = await GetAddress(markers.marker1.position.lat, markers.marker1.position.lng);
         current_total_time = parseInt(document.getElementById('total-time').textContent, 10);
         current_total_time += 1;
@@ -52,6 +59,18 @@ async function initMap() {
         markers.marker1.gmpDraggable = false;
         markers.marker2.gmpDraggable = false;
     });
+    // document.getElementById("submit-origin").addEventListener("click", async function () {
+    //
+    // }
+    document.getElementById("link").addEventListener("click", async function () {
+        if(routeId){
+            let routeCoords = await getRouteCoords(routeId);
+            let link = generateGoogleMapsLink(routeCoords);
+            console.log("Link do Google Maps:", link);
+            window.open(link, "_blank");
+        }
+    });
+
     document.getElementById("entertainmentAndRecreation").addEventListener('click', () => handleButtonClick('entertainment', Place));
     document.getElementById("foodAndDrink").addEventListener('click', () => handleButtonClick('foodAndDrink', Place));
     document.getElementById("culture").addEventListener('click', () => handleButtonClick('culture', Place));
@@ -383,39 +402,41 @@ function calculateRoute(map, origin, destination) {
         .catch(error => console.error('Error:', error));
 }
 
-function addRouteToDB(origin, destination) {
-    let Id;
-    fetch('/route/save', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            origin: {
-                latitude: origin.lat,
-                longitude: origin.lng,
-                name: "origin"
+async function addRouteToDB(origin, destination) {
+    try {
+        const response = await fetch('/route/save', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
             },
-            destination: {
-                latitude: destination.lat,
-                longitude: destination.lng,
-                name: "destination"
-            }
-        })
-    })
-        .then(response => {                     // response is an id of a route (for now)
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.text();
-        })
-        .then(routeId => {
-            console.log('Route ID:', routeId);
-            Id = routeId;
-        })
-        .catch(error => console.error('Error saving route points:', error));
-    return Id;
+            body: JSON.stringify({
+                origin: {
+                    latitude: origin.lat,
+                    longitude: origin.lng,
+                    name: "origin"
+                },
+                destination: {
+                    latitude: destination.lat,
+                    longitude: destination.lng,
+                    name: "destination"
+                }
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+
+        const routeId = await response.text();
+        console.log('Route ID:', routeId);
+
+        return routeId;
+    } catch (error) {
+        console.error('Error saving route points:', error);
+        return null;
+    }
 }
+
 
 // function addLegToDB(origin, destination, polyline) {
 //     fetch('/leg/save', {
@@ -432,7 +453,8 @@ function addRouteToDB(origin, destination) {
 //                 latitude: destination.lat(),
 //                 longitude: destination.lng()
 //             },
-//             polyline: polyline
+//             polyline: polyline,
+//             routeId: routeId
 //         })
 //     })
 //         .then(response => {
@@ -442,7 +464,7 @@ function addRouteToDB(origin, destination) {
 //             return response.text();
 //         })
 //         .then(routeId => {
-//             console.log('Route ID:', legId);  // Wyświetla id zapisanej trasy
+//             console.log('Leg ID:', legId);  // Wyświetla id zapisanej trasy
 //         })
 //         .catch(error => console.error('Error saving route points:', error));
 // }
@@ -483,4 +505,58 @@ function renderList() {
         list.appendChild(li);
     });
 }
+
+function generateGoogleMapsLink(points, travelMode = "driving") {
+    if (points.length < 2) {
+        throw new Error("Musisz podać co najmniej dwa punkty: początkowy i końcowy.");
+    }
+
+    const origin = `${points[0][0]},${points[0][1]}`;
+    const destination = `${points[points.length - 1][0]},${points[points.length - 1][1]}`;
+
+    let waypointsParam = "";
+    if (points.length > 2) {
+        const waypoints = points.slice(1, points.length - 1)
+            .map(point => `${point[0]},${point[1]}`)
+            .join('|');
+        waypointsParam = `&waypoints=${waypoints}`;
+    }
+
+    return `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}${waypointsParam}&travelmode=${travelMode}`;
+}
+
+async function getRouteCoords(routeId) {
+    let routeCoords = [];
+    try {
+        const response = await fetch('/mappoint/getbyrouteid', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                routeId: routeId
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+
+        const data = await response.json();
+        console.log('Route coordinates:', data);
+
+        data.forEach(coords => {
+            routeCoords.push([coords[0], coords[1]]);
+        });
+
+        return routeCoords;
+    } catch (error) {
+        console.error('Error getting route points:', error);
+        return [];
+    }
+}
+
+
+
+
 

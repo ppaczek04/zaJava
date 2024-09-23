@@ -22,6 +22,10 @@
                 <p>Total time: <span id="total-time"></span></p>
                 <p>Total distance: <span id="total-distance"></span></p>
             </div>
+            <div class="tooltip-container">
+                <button class="link-btn" id="link">Export</button>
+                <span class="modaltip">Get your journey in Google Maps</span>
+            </div>
             <div class="cf footer">
                 <a href="#" class="btn">Close</a>
             </div>
@@ -35,17 +39,17 @@
         <div class="flexbox">
             <div class="form-floating">
                 <input type="text" class="form-control rounded-3" id="origin" readonly>
-                <button class="submit-btn" id="origAndDestPoints">&#10003;</button>
+                <button class="submit-btn" id="submit-origin">&#10003;</button>
                 <label for="origin">Home</label>
             </div>
             <div class="form-floating">
                 <input type="text" class="form-control rounded-3" id="destination" readonly>
-                <button class="submit-btn">&#10003;</button>
+                <button class="submit-btn" id="submit-destination">&#10003;</button>
                 <label for="destination">Destination</label>
             </div>
             <div class="form-floating">
                 <input type="number" class="form-control rounded-3" id="radius" min="0">
-                <button class="submit-btn">&#10003;</button>
+                <button class="submit-btn" id="test-radius">&#10003;</button>
                 <label for="radius">Radius</label>
             </div>
         </div>
@@ -71,15 +75,6 @@
                     <span class="tooltip">Radius</span>
                 </li>
             </ul>
-<!--            <ul>-->
-<!--                <li>-->
-<!--                    <a href="#" id="origAndDestPoints">-->
-<!--                        <i class="bi bi-check-square"></i>-->
-<!--                        <span class="nav-item">Confirm</span>-->
-<!--                    </a>-->
-<!--                    <span class = "tooltip">Confirm</span>-->
-<!--                </li>-->
-<!--            </ul>-->
             <ul class="types">
                 <li>
                     <a href="#" id="entertainmentAndRecreation">
