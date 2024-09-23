@@ -1,9 +1,6 @@
 package com.zaJava.ZaJava.places;
 
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
 @RestController
@@ -39,6 +36,11 @@ public class PlacesController {
     @PostMapping("/busStop")
     public Mono<String> getNearbyBusStop(@RequestBody PlaceDto request) {
         return placesService.searchNearby(request, TypesLists.getBusStop());
+    }
+
+    @PostMapping("/info")
+    public Mono<String> getPlaceInfo(@RequestBody String id) {
+        return placesService.getPlaceInfo(id);
     }
 }
 

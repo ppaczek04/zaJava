@@ -38,7 +38,8 @@ public class PlacesService {
                 .header(
                         "X-Goog-FieldMask",
 //                        "places.displayName.text",
-                        "places.location"
+                        "places.location",
+                                     "places.id"
 //                        "places.rating",
 //                        "places.websiteUri",
 //                        "places.regularOpeningHours.weekdayDescriptions"
@@ -48,5 +49,18 @@ public class PlacesService {
                 .bodyToMono(String.class);
     }
 
+    public Mono<String> getPlaceInfo(String placeId) {
+        String sanitizedPlaceId = placeId.replace("\"", "");
+        return webClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/" + sanitizedPlaceId)
+                        .build())
+                .header(
+                        "X-Goog-FieldMask",
+                        "id,displayName,websiteUri,regularOpeningHours.weekdayDescriptions"
+                )
+                .retrieve()
+                .bodyToMono(String.class);
+    }
 }
 

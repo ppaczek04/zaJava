@@ -8,7 +8,9 @@ const selections = {
     sport: false,
     busStop: false
 };
-let mainCircle
+let mainCircle;
+let mainMarker;
+const SelectedPlaces = {};
 
 async function initMap() {
     map = new google.maps.Map(document.getElementById('map'), {
@@ -37,6 +39,10 @@ async function initMap() {
         markers.marker1.gmpDraggable = false;
         markers.marker2.gmpDraggable = false;
     });
+    handleSidebarButtons();
+}
+
+function handleSidebarButtons() {
     document.getElementById("entertainmentAndRecreation").addEventListener('click', () => handleButtonClick('entertainment', Place));
     document.getElementById("foodAndDrink").addEventListener('click', () => handleButtonClick('foodAndDrink', Place));
     document.getElementById("culture").addEventListener('click', () => handleButtonClick('culture', Place));
@@ -44,7 +50,9 @@ async function initMap() {
     document.getElementById("busStop").addEventListener('click', () => handleButtonClick('busStop', Place));
 }
 
-function setDefaultRadius(radius){ document.getElementById('radius').value = radius; }
+function setDefaultRadius(radius){
+    document.getElementById('radius').value = radius;
+}
 
 function addMapListener(){
     let i = 0;
@@ -75,6 +83,9 @@ function addMapListener(){
             });
             addMarkerListener(markers[markerKey]);
             i += 1;
+            if(i === 1) {
+                mainMarker = markers[markerKey];
+            }
         }
     });
     return markers;
@@ -136,79 +147,48 @@ const handleButtonClick = async (key, place) => {
 };
 
 
-function addMarkers(points) {
+async function addMarkers(points) {
     clearPlacesMarkers();
     let i = 1;
-    // Z tym był jakiś problem
-    // let pinSvgString = '<svg width="45px" height="45px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">\n' + '  <defs>\n' + '    <path id="marker-a" d="M5,2 C4.44771525,2 4,1.55228475 4,1 C4,0.44771525 4.44771525,0 5,0 C5.55228475,0 6,0.44771525 6,1 C6,1.55228475 5.55228475,2 5,2 Z M11.1660156,4.88720703 C11.5270182,4.88753255 11.0398763,6.09019866 9.70458984,8.49520536 C8.36930339,10.9002121 6.80110677,12.8476111 5,14.3374023 C3.47981771,13.1349284 1.89029948,11.2677409 0.231445312,8.73583984 C1.1640625,9.98632812 3.83496094,10.6665039 5.96948242,7.01611328 C7.39249674,4.58251953 9.12467448,3.87288411 11.1660156,4.88720703 Z"/>\n' + '    <path id="marker-c" d="M8,22 C5.23620113,22 0,12.5164513 0,8.162063 C0,3.65933791 3.57653449,0 8,0 C12.4234655,0 16,3.65933791 16,8.162063 C16,12.5164513 10.7637989,22 8,22 Z M8,20 C8.39916438,20 9.97421309,18.1222923 11.3773555,15.5809901 C12.9364167,12.7572955 14,9.79929622 14,8.162063 C14,4.75379174 11.308521,2 8,2 C4.69147901,2 2,4.75379174 2,8.162063 C2,9.79929622 3.06358328,12.7572955 4.62264452,15.5809901 C6.02578691,18.1222923 7.60083562,20 8,20 Z M8,12 C5.790861,12 4,10.209139 4,8 C4,5.790861 5.790861,4 8,4 C10.209139,4 12,5.790861 12,8 C12,10.209139 10.209139,12 8,12 Z M8,10 C9.1045695,10 10,9.1045695 10,8 C10,6.8954305 9.1045695,6 8,6 C6.8954305,6 6,6.8954305 6,8 C6,9.1045695 6.8954305,10 8,10 Z"/>\n' + '  </defs>\n' + '  <g fill="none" fill-rule="evenodd" transform="translate(4 1)">\n' + '    <g transform="translate(3 7)">\n' + '      <mask id="marker-b" fill="#ffffff">\n' + '        <use xlink:href="#marker-a"/>\n' + '      </mask>\n' + '      <use fill="#D8D8D8" xlink:href="#marker-a"/>\n' + '      <g fill="#FFA0A0" mask="url(#marker-b)">\n' + '        <rect width="24" height="24" transform="translate(-7 -8)"/>\n' + '      </g>\n' + '    </g>\n' + '    <mask id="marker-d" fill="#ffffff">\n' + '      <use xlink:href="#marker-c"/>\n' + '    </mask>\n' + '    <use fill="#000000" fill-rule="nonzero" xlink:href="#marker-c"/>\n' + '    <g fill="#7600FF" mask="url(#marker-d)">\n' + '      <rect width="24" height="24" transform="translate(-4 -1)"/>\n' + '    </g>\n' + '  </g>\n' + '</svg>';
-    // const parser = new DOMParser();
-    // const pinSvg = parser.parseFromString(
-    //     pinSvgString,
-    //     "image/svg+xml",
-    // ).documentElement;
+    let pinSvgString = getPinSvgString("unselected");
     if(mainCircle) { mainCircle.setMap(null); }
     mainCircle = addCircle(Math.floor(document.getElementById('radius').value));
 
     console.log('POINTS: ', points, "\n");
-    points.forEach(point => {
-        console.log(`\n\n I added place${i} \n\n`)
+    for (const point of points) {
+        const parser = new DOMParser();
+        const pinSvg = parser.parseFromString(
+            pinSvgString,
+            "image/svg+xml",
+        ).documentElement;
+        console.log(`\n\n I added place${i}: ${point.placeId} \n\n`)
+
+        const placeInformation = await getPlaceInfo(point.placeId);
+
+        //
+        /*  calculateDistance(place1, place2) {} <--------- Napisać to ale w innym miejscu i wywołać tutaj*/
+        //
+
+        const response = await calculateDistance(mainMarker.position, {lat: point.latitude, lng: point.longitude});
+        const distance = response.routes[0].distanceMeters;
+        console.log("response", distance);
+
         const placeKey = `place${i}`;
         placesMarkers[placeKey] = new google.maps.marker.AdvancedMarkerElement({
             position: {lat: point.latitude, lng: point.longitude},
             map: map,
             title: placeKey,
-            // content: pinSvg
+            content: pinSvg
         });
         placesInfoWindows[placeKey] = new google.maps.InfoWindow({
-            content: `
-                <head>
-                    <title>info-window</title>
-                    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.8.1/font/bootstrap-icons.min.css" rel="stylesheet">
-                </head>
-                <body>
-                <div style="
-                                padding: 10px;
-                              ">
-                    <style>
-                        .gm-style-iw-chr {display: none;}
-                        .info-window { padding: 10px; }
-                        .info-header { display: flex; justify-content: space-between; align-items: center; }
-                        .info-place { display: flex; align-items: center; }
-                        .bi-geo-alt-fill { margin-right: 8px; color: #7600FF}
-                        .info-distance { color: gray; }
-                        .info-details { margin-top: 10px;}
-                        .info-hours { margin-top: 10px; color: gray; }
-                        .info-buttons { margin-top: 10px; display: flex; justify-content: space-between; }
-                        .button {background-color: #7600FF; color: white; border: none; padding: 5px 10px; border-radius: 5px; font-size: 14px; cursor: pointer; transition: background-color 0.3s ease, transform 0.3s ease;}
-                        .button:hover {background-color: #5700CC; transform: scale(1.1);}
-                    </style>
-                
-                    <div class="info-window">
-                        <div class="info-header">
-                            <div class="info-place">
-                                <i class="bi bi-geo-alt-fill"></i>
-                                <div><strong>Nazwa Miejsca</strong></div>
-                            </div>
-                            <div class="info-distance">1.5km</div>
-                        </div>
-                
-                        <div class="info-details">
-                            informacjeinformacje
-                        </div>
-                        
-                        <div class="info-hours">
-                            <strong>Godziny otwarcia</strong>: Mon - Fri 9:00 AM to 5:00 PM
-                        </div>
-                        
-                        <div class="info-buttons">
-                            <button class="button" id="close-button">Close</button>
-                            <button class="button" id="select-button">Select</button>
-                        </div>
-                    </div>
-                </div>
-                </body>
-            `,
-            maxWidth: 250
+            content: getInfoWindowContent(placeInformation.displayName.text,
+                                        placeInformation.websiteUri,
+                            placeInformation.regularOpeningHours && placeInformation.regularOpeningHours.weekdayDescriptions
+                                            ? placeInformation.regularOpeningHours.weekdayDescriptions
+                                            : "None",
+                                        distance
+            ),
+            maxWidth: 270
         });
 
 
@@ -223,42 +203,57 @@ function addMarkers(points) {
                 anchor: placesMarkers[placeKey],
                 map: map,
             });
-
-            google.maps.event.addListenerOnce(placesInfoWindows[placeKey], 'domready', function () {
-                const closeButton = document.getElementById('close-button');
-                const selectButton = document.getElementById('select-button');
-
-                function handleButtonClick(event) {
-                    if (event.target.id === 'close-button') {
-                        selectButton.removeEventListener('click', handleButtonClick);
-                        placesInfoWindows[placeKey].close();
-                    } else if (event.target.id === 'select-button') {
-                        console.log('Select button clicked!');
-                        const position = placesMarkers[placeKey].position;
-                        placesMarkers[placeKey].map = null;
-
-                        // const pinBackground = new PinElement({
-                        //     background: "#FBBC04",
-                        // });
-
-                        placesMarkers[placeKey] = new AdvancedMarkerElement({
-                            map: map,
-                            position: {lat: position.lat(), lng: position.lng()},
-                            content: pinBackground.element,
-                        });
-                    }
-                }
-
-                closeButton.removeEventListener('click', handleButtonClick);
-                selectButton.removeEventListener('click', handleButtonClick);
-
-                closeButton.addEventListener('click', handleButtonClick);
-                selectButton.addEventListener('click', handleButtonClick);
-            });
-
+            handleMarkerClick(placeKey);
             });
             i += 1;
+    }
+}
+
+function handleMarkerClick(placeKey) {
+    google.maps.event.addListenerOnce(placesInfoWindows[placeKey], 'domready', function () {
+        const closeButton = document.getElementById('close-button');
+        const selectButton = document.getElementById('select-button');
+
+        function handleButtonClick(event) {
+            if (event.target.id === 'close-button') {
+                handleCloseButton(placeKey, selectButton);
+            } else if (event.target.id === 'select-button') {
+                handleSelectButton(placeKey);
+            }
+        }
+
+        closeButton.removeEventListener('click', handleButtonClick);
+        selectButton.removeEventListener('click', handleButtonClick);
+
+        closeButton.addEventListener('click', handleButtonClick);
+        selectButton.addEventListener('click', handleButtonClick);
     });
+}
+
+function handleCloseButton(placeKey, selectButton) {
+    selectButton.removeEventListener('click', handleButtonClick);
+    placesInfoWindows[placeKey].close();
+}
+
+function handleSelectButton(placeKey) {
+    let pinSvgStringSelected = getPinSvgString("selected");
+    console.log('Select button clicked!');
+    const position = placesMarkers[placeKey].position;
+    placesMarkers[placeKey].map = null;
+
+    const parser = new DOMParser();
+    const pinSvg = parser.parseFromString(
+        pinSvgStringSelected,
+        "image/svg+xml",
+    ).documentElement;
+
+    SelectedPlaces[placeKey] = new google.maps.marker.AdvancedMarkerElement({
+        map: map,
+        position: {lat: position.lat, lng: position.lng},
+        content: pinSvg,
+    });
+    drawPolyline({marker1: mainMarker, marker2: SelectedPlaces[placeKey]});
+    mainMarker = SelectedPlaces[placeKey];
 }
 
 function clearPlacesMarkers() {
@@ -282,6 +277,9 @@ function addCircle(radius){
 }
 
 async function handleSelection(selections, place) {
+    if(mainMarker) {
+        setNewPlace(mainMarker.position.lat, mainMarker.position.lng)
+    }
     console.log('SELECTIONS:', selections, '\n\n\n\n');
     place.radius = Math.floor(document.getElementById('radius').value);
     try {
@@ -302,7 +300,7 @@ async function handleSelection(selections, place) {
 
         const points = await response.json();
         console.log('Otrzymane punkty:', points);
-        addMarkers(points);
+        await addMarkers(points);
     } catch (error) {
         console.error('There was a problem with the fetch operation:', error);
     }
@@ -366,6 +364,47 @@ function calculateRoute(map, origin, destination) {
             }
         })
         .catch(error => console.error('Error:', error));
+}
+
+async function calculateDistance(origin, destination) {
+    const requestBody = {
+        origin: {
+            location: {
+                latLng: {
+                    latitude: origin.lat,
+                    longitude: origin.lng
+                }
+            }
+        },
+        destination: {
+            location: {
+                latLng: {
+                    latitude: destination.lat,
+                    longitude: destination.lng
+                }
+            }
+        },
+        travelMode: 'DRIVE'
+    };
+
+
+    const response = await fetch('https://routes.googleapis.com/directions/v2:computeRoutes', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Goog-Api-Key': 'AIzaSyABfgoEg2PzuIVn-M4myjE1gNesvBHWMHU',
+            'X-Goog-FieldMask': 'routes.distanceMeters'
+        },
+        body: JSON.stringify(requestBody)
+    })
+
+    if (!response.ok) {
+    throw new Error('Network response was not ok');
+    }
+
+    const distance = await response.json();
+    console.log('Information: ', distance);
+    return distance;
 }
 
 function addRouteToDB(origin, destination) {
@@ -456,4 +495,95 @@ async function GetAddress(latitude, longitude) {
     }
 }
 
+async function getPlaceInfo(placeId) {
+    try {
+        const response = await fetch('/places/info', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(placeId)
+        });
 
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+
+        const placeInformation = await response.json();
+        console.log('Information:', placeInformation);
+        return placeInformation;
+    } catch (error) {
+        console.error('There was a problem with the fetch operation:', error);
+        return null;
+    }
+}
+
+function getInfoWindowContent(placeName, information, openingHours, distance) {
+    return `
+                <head>
+                    <title>info-window</title>
+                    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.8.1/font/bootstrap-icons.min.css" rel="stylesheet">
+                </head>
+                <body>
+                <div style="
+                                padding: 10px;
+                              ">
+                    <style>
+                        .gm-style-iw-chr {display: none;}
+                        .info-window { padding: 10px; }
+                        .info-header { display: flex; justify-content: space-between; align-items: center; }
+                        .info-place { display: flex; align-items: center; }
+                        .bi-geo-alt-fill { margin-right: 8px; color: #7600FF}
+                        .info-distance { color: gray; margin-left: 20px}
+                        .info-details { margin-top: 10px; max-width: 230px; /*overflow-x: auto; white-space: nowrap;*/}
+                        .info-hours { margin-top: 10px; color: gray; }
+                        .info-hours span { display: block;}
+                        .info-buttons { margin-top: 10px; display: flex; justify-content: space-between; }
+                        .button {background-color: #7600FF; color: white; border: none; padding: 5px 10px; border-radius: 5px; font-size: 14px; cursor: pointer; transition: background-color 0.3s ease, transform 0.3s ease;}
+                        .button:hover {background-color: #5700CC; transform: scale(1.1);}
+                    </style>
+                
+                    <div class="info-window">
+                        <div class="info-header">
+                            <div class="info-place">
+                                <i class="bi bi-geo-alt-fill"></i>
+                                <div><strong>${placeName}</strong></div>
+                            </div>
+                            <div class="info-distance">${distance}m</div>
+                        </div>
+                
+                        <div class="info-details">
+                            <a href="${information? information: ""}" target="_blank">${information ? information: "No website"}</a>
+                        </div>
+                        
+                        <div class="info-hours">
+                            <strong>Opening hours:</strong><br>
+                            ${openingHours !== "None" ? `
+                                <span>${openingHours[0]}</span>
+                                <span>${openingHours[1]}</span>
+                                <span>${openingHours[2]}</span>
+                                <span>${openingHours[3]}</span>
+                                <span>${openingHours[4]}</span>
+                                <span>${openingHours[5]}</span>
+                                <span>${openingHours[6]}</span>
+                            ` : "None"}
+                        </div>
+                        
+                        <div class="info-buttons">
+                            <button class="button" id="close-button">Close</button>
+                            <button class="button" id="select-button">Select</button>
+                        </div>
+                    </div>
+                </div>
+                </body>
+            `
+}
+
+function getPinSvgString(type) {
+    if(type === "unselected"){
+        return '<svg width="45px" height="45px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">\n' + '  <defs>\n' + '    <path id="marker-a" d="M5,2 C4.44771525,2 4,1.55228475 4,1 C4,0.44771525 4.44771525,0 5,0 C5.55228475,0 6,0.44771525 6,1 C6,1.55228475 5.55228475,2 5,2 Z M11.1660156,4.88720703 C11.5270182,4.88753255 11.0398763,6.09019866 9.70458984,8.49520536 C8.36930339,10.9002121 6.80110677,12.8476111 5,14.3374023 C3.47981771,13.1349284 1.89029948,11.2677409 0.231445312,8.73583984 C1.1640625,9.98632812 3.83496094,10.6665039 5.96948242,7.01611328 C7.39249674,4.58251953 9.12467448,3.87288411 11.1660156,4.88720703 Z"/>\n' + '    <path id="marker-c" d="M8,22 C5.23620113,22 0,12.5164513 0,8.162063 C0,3.65933791 3.57653449,0 8,0 C12.4234655,0 16,3.65933791 16,8.162063 C16,12.5164513 10.7637989,22 8,22 Z M8,20 C8.39916438,20 9.97421309,18.1222923 11.3773555,15.5809901 C12.9364167,12.7572955 14,9.79929622 14,8.162063 C14,4.75379174 11.308521,2 8,2 C4.69147901,2 2,4.75379174 2,8.162063 C2,9.79929622 3.06358328,12.7572955 4.62264452,15.5809901 C6.02578691,18.1222923 7.60083562,20 8,20 Z M8,12 C5.790861,12 4,10.209139 4,8 C4,5.790861 5.790861,4 8,4 C10.209139,4 12,5.790861 12,8 C12,10.209139 10.209139,12 8,12 Z M8,10 C9.1045695,10 10,9.1045695 10,8 C10,6.8954305 9.1045695,6 8,6 C6.8954305,6 6,6.8954305 6,8 C6,9.1045695 6.8954305,10 8,10 Z"/>\n' + '  </defs>\n' + '  <g fill="none" fill-rule="evenodd" transform="translate(4 1)">\n' + '    <g transform="translate(3 7)">\n' + '      <mask id="marker-b" fill="#ffffff">\n' + '        <use xlink:href="#marker-a"/>\n' + '      </mask>\n' + '      <use fill="#D8D8D8" xlink:href="#marker-a"/>\n' + '      <g fill="#FFA0A0" mask="url(#marker-b)">\n' + '        <rect width="24" height="24" transform="translate(-7 -8)"/>\n' + '      </g>\n' + '    </g>\n' + '    <mask id="marker-d" fill="#ffffff">\n' + '      <use xlink:href="#marker-c"/>\n' + '    </mask>\n' + '    <use fill="#000000" fill-rule="nonzero" xlink:href="#marker-c"/>\n' + '    <g fill="#7600FF" mask="url(#marker-d)">\n' + '      <rect width="24" height="24" transform="translate(-4 -1)"/>\n' + '    </g>\n' + '  </g>\n' + '</svg>';
+    }
+    else if(type === "selected") {
+        return '<svg width="45px" height="45px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">\n' + '  <defs>\n' + '    <path id="marker-a" d="M5,2 C4.44771525,2 4,1.55228475 4,1 C4,0.44771525 4.44771525,0 5,0 C5.55228475,0 6,0.44771525 6,1 C6,1.55228475 5.55228475,2 5,2 Z M11.1660156,4.88720703 C11.5270182,4.88753255 11.0398763,6.09019866 9.70458984,8.49520536 C8.36930339,10.9002121 6.80110677,12.8476111 5,14.3374023 C3.47981771,13.1349284 1.89029948,11.2677409 0.231445312,8.73583984 C1.1640625,9.98632812 3.83496094,10.6665039 5.96948242,7.01611328 C7.39249674,4.58251953 9.12467448,3.87288411 11.1660156,4.88720703 Z"/>\n' + '    <path id="marker-c" d="M8,22 C5.23620113,22 0,12.5164513 0,8.162063 C0,3.65933791 3.57653449,0 8,0 C12.4234655,0 16,3.65933791 16,8.162063 C16,12.5164513 10.7637989,22 8,22 Z M8,20 C8.39916438,20 9.97421309,18.1222923 11.3773555,15.5809901 C12.9364167,12.7572955 14,9.79929622 14,8.162063 C14,4.75379174 11.308521,2 8,2 C4.69147901,2 2,4.75379174 2,8.162063 C2,9.79929622 3.06358328,12.7572955 4.62264452,15.5809901 C6.02578691,18.1222923 7.60083562,20 8,20 Z M8,12 C5.790861,12 4,10.209139 4,8 C4,5.790861 5.790861,4 8,4 C10.209139,4 12,5.790861 12,8 C12,10.209139 10.209139,12 8,12 Z M8,10 C9.1045695,10 10,9.1045695 10,8 C10,6.8954305 9.1045695,6 8,6 C6.8954305,6 6,6.8954305 6,8 C6,9.1045695 6.8954305,10 8,10 Z"/>\n' + '  </defs>\n' + '  <g fill="none" fill-rule="evenodd" transform="translate(4 1)">\n' + '    <g transform="translate(3 7)">\n' + '      <mask id="marker-b" fill="#ffffff">\n' + '        <use xlink:href="#marker-a"/>\n' + '      </mask>\n' + '      <use fill="#D8D8D8" xlink:href="#marker-a"/>\n' + '      <g fill="#FFA0A0" mask="url(#marker-b)">\n' + '        <rect width="24" height="24" transform="translate(-7 -8)"/>\n' + '      </g>\n' + '    </g>\n' + '    <mask id="marker-d" fill="#ffffff">\n' + '      <use xlink:href="#marker-c"/>\n' + '    </mask>\n' + '    <use fill="#000000" fill-rule="nonzero" xlink:href="#marker-c"/>\n' + '    <g fill="#FFFF00" mask="url(#marker-d)">\n' + '      <rect width="24" height="24" transform="translate(-4 -1)"/>\n' + '    </g>\n' + '  </g>\n' + '</svg>';
+    }
+}
