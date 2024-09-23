@@ -358,6 +358,13 @@ function calculateRoute(map, origin, destination) {
                     strokeWeight: 5,
                 });
 
+                intermediatePath.addListener('mouseover', () => {
+                    intermediatePath.setOptions({ strokeColor: '#00FF00' });
+                });
+                intermediatePath.addListener('mouseout', () => {
+                    intermediatePath.setOptions({ strokeColor: '#9E5FC2' });
+                });
+
                 intermediatePath.setMap(map);
             } else {
                 console.error('No routes found in the response.');
