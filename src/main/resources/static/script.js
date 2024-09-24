@@ -52,12 +52,6 @@ async function initMap() {
     });
     document.getElementById("submit-destination").addEventListener("click", async function () {
         routeId = await getRouteId(markers);
-        current_total_time = parseInt(document.getElementById('total-time').textContent, 10);
-        current_total_time += 1;
-        document.getElementById('total-time').textContent = current_total_time;
-        current_total_distance = parseInt(document.getElementById('total-distance').textContent, 10);
-        current_total_distance += 1;
-        document.getElementById('total-distance').textContent = current_total_distance;
         markers.marker2.gmpDraggable = false;
     });
 
@@ -142,20 +136,27 @@ function setNewPlace(latitude, longitude){
 }
 
 async function drawPolyline(markers) {
-    if (markers.marker1 && markers.marker2) {
-        return await calculateRoute(map, markers.marker1.position, markers.marker2.position)
-            .then(encodedPolyline => {
-                console.log('Encoded polyline:', encodedPolyline);
-                return escapeBackslashes(encodedPolyline);
-            })
-            .catch(error => {
-                console.error('Error during route calculation:', error);
-                throw error;
-            });
+    const result = await calculateRoute(map, markers.marker1.position, markers.marker2.position);
+    if (result) {
+        return result;
     } else {
-        alert("Proszę wybrać dwa punkty na mapie.");
-        return Promise.reject('Brak zaznaczonych punktów.');
+        console.error('Failed to get route data.');
     }
+
+    // if (markers.marker1 && markers.marker2) {
+    //     return await calculateRoute(map, markers.marker1.position, markers.marker2.position)
+    //         .then(encodedPolyline => {
+    //             console.log('Encoded polyline:', encodedPolyline);
+    //             return escapeBackslashes(encodedPolyline);
+    //         })
+    //         .catch(error => {
+    //             console.error('Error during route calculation:', error);
+    //             throw error;
+    //         });
+    // } else {
+    //     alert("Proszę wybrać dwa punkty na mapie.");
+    //     return Promise.reject('Brak zaznaczonych punktów.');
+    // }
 }
 
 
@@ -297,9 +298,15 @@ async function handleSelectButton(placeKey) {
         position: {lat: position.lat, lng: position.lng},
         content: pinSvg,
     });
-    const legPolyline = await drawPolyline({marker1: mainMarker, marker2: SelectedPlaces[placeKey]});
-    console.log(legPolyline);
-    addLegToDB(mainMarker.position, SelectedPlaces[placeKey].position, legPolyline);
+    const result = await drawPolyline({marker1: mainMarker, marker2: SelectedPlaces[placeKey]});
+    console.log(escapeBackslashes(result.polyline));
+    addLegToDB(mainMarker.position, SelectedPlaces[placeKey].position, escapeBackslashes(result.polyline));
+    current_total_time = parseInt(document.getElementById('total-time').textContent, 10);
+    current_total_time += Math.ceil(parseInt(result.time)/60);
+    document.getElementById('total-time').textContent = current_total_time;
+    current_total_distance = parseInt(document.getElementById('total-distance').textContent, 10);
+    current_total_distance += result.distance;
+    document.getElementById('total-distance').textContent = current_total_distance;
     mainMarker = SelectedPlaces[placeKey];
 }
 function escapeBackslashes(inputString) {
@@ -373,7 +380,7 @@ async function calculateRoute(map, origin, destination) {
                 }
             }
         },
-        travelMode: 'DRIVE'
+        travelMode: 'WALK'
     };
 
     try {
@@ -409,7 +416,11 @@ async function calculateRoute(map, origin, destination) {
             });
 
             intermediatePath.setMap(map);
-            return route.polyline.encodedPolyline;
+            return {
+                polyline: route.polyline.encodedPolyline,
+                distance: route.distanceMeters,
+                time: route.duration
+            };
         } else {
             console.error('No routes found in the response.');
         }
@@ -437,7 +448,7 @@ async function calculateDistance(origin, destination) {
                 }
             }
         },
-        travelMode: 'DRIVE'
+        travelMode: 'WALK'
     };
 
 
@@ -647,7 +658,7 @@ function renderList() {
     });
 }
 
-function generateGoogleMapsLink(points, travelMode = "driving") {
+function generateGoogleMapsLink(points, travelMode = "walking") {
     if (points.length < 2) {
         throw new Error("Musisz podać co najmniej dwa punkty: początkowy i końcowy.");
     }

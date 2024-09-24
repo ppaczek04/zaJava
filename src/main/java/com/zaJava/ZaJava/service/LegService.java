@@ -51,7 +51,6 @@ public class LegService {
 
         origin.setLeg(leg);
         destination.setLeg(leg);
-        mapPointRepository.save(origin);
         mapPointRepository.save(destination);
 
         return leg.getId();
