@@ -11,7 +11,7 @@ public class LegRequest {
     private LocationDTO origin;
     private LocationDTO destination;
     private String polyline;
-    //private Integer routeId;
+    private Integer routeId;
 
     @Data
     @NoArgsConstructor

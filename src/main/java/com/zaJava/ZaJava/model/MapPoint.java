@@ -24,6 +24,6 @@ public class MapPoint {
     private Leg leg;
 
     @ManyToOne
-    @JoinColumn(name = "pointsToRoute_id")
+    @JoinColumn(name = "routeId")
     private Route route;
 }
