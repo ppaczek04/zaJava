@@ -16,6 +16,10 @@ let current_total_distance;
 let mainMarker;
 const SelectedPlaces = {};
 
+$("#btn").click(function () {
+    $(".sidebar").toggleClass('active');
+});
+
 async function initMap() {
     map = new google.maps.Map(document.getElementById('map'), {
         center: coords,
@@ -199,10 +203,6 @@ async function addMarkers(points) {
 
         const placeInformation = await getPlaceInfo(point.placeId);
 
-        //
-        /*  calculateDistance(place1, place2) {} <--------- Napisać to ale w innym miejscu i wywołać tutaj*/
-        //
-
         const response = await calculateDistance(mainMarker.position, {lat: point.latitude, lng: point.longitude});
         const distance = response.routes[0].distanceMeters;
         console.log("response", distance);
@@ -230,7 +230,7 @@ async function addMarkers(points) {
             console.log(`Marker ${placeKey} clicked`);
             for(const key in placesInfoWindows) {
                 if (placesInfoWindows[key].isOpen) {
-                    document.getElementById('close-button').click()
+                    document.getElementById('close-button').click();
                 }
             }
             placesInfoWindows[placeKey].open({
@@ -243,10 +243,31 @@ async function addMarkers(points) {
     }
 }
 
+// function handleMarkerClick(placeKey) {
+//     google.maps.event.addListenerOnce(placesInfoWindows[placeKey], 'domready', function () {
+//         const closeButton = document.getElementById('close-button');
+//         const selectButton = document.getElementById('select-button');
+//
+//         function handleButtonClick(event) {
+//             if (event.target.id === 'close-button') {
+//                 handleCloseButton(placeKey, selectButton);
+//             } else if (event.target.id === 'select-button') {
+//                 handleSelectButton(placeKey);
+//             }
+//         }
+//
+//         closeButton.removeEventListener('click', handleButtonClick);
+//         selectButton.removeEventListener('click', handleButtonClick);
+//
+//         closeButton.addEventListener('click', handleButtonClick);
+//         selectButton.addEventListener('click', handleButtonClick);
+//     });
+// }
+
 function handleMarkerClick(placeKey) {
     google.maps.event.addListenerOnce(placesInfoWindows[placeKey], 'domready', function () {
-        const closeButton = document.getElementById('close-button');
-        const selectButton = document.getElementById('select-button');
+        const closeButton = $('#close-button');
+        const selectButton = $('#select-button');
 
         function handleButtonClick(event) {
             if (event.target.id === 'close-button') {
@@ -256,16 +277,17 @@ function handleMarkerClick(placeKey) {
             }
         }
 
-        closeButton.removeEventListener('click', handleButtonClick);
-        selectButton.removeEventListener('click', handleButtonClick);
 
-        closeButton.addEventListener('click', handleButtonClick);
-        selectButton.addEventListener('click', handleButtonClick);
+        closeButton.off('click');
+        selectButton.off('click');
+
+        closeButton.on('click', handleButtonClick);
+        selectButton.on('click', handleButtonClick);
     });
 }
 
 function handleCloseButton(placeKey, selectButton) {
-    selectButton.removeEventListener('click', handleButtonClick);
+    selectButton.off('click');
     placesInfoWindows[placeKey].close();
 }
 
