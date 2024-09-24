@@ -41,9 +41,9 @@ public class RouteService {
         routeRepository.save(route);
 
         origin.setRoute(route);
-        destination.setRoute(route);
+//        destination.setRoute(route);
         mapPointRepository.save(origin);
-        mapPointRepository.save(destination);
+//        mapPointRepository.save(destination);
 
         return route.getId();
     }

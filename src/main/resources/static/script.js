@@ -15,6 +15,8 @@ let current_total_time;
 let current_total_distance;
 let mainMarker;
 const SelectedPlaces = {};
+let routeId;
+
 
 async function initMap() {
     map = new google.maps.Map(document.getElementById('map'), {
@@ -32,12 +34,7 @@ async function initMap() {
 
     // Add listener to create a marker after click
     let markers = addMapListener();
-    let routeId;
 
-    // Calculate route and display polyline
-    document.getElementById("calculateRouteBtn").addEventListener("click", function () {
-        drawPolyline(markers);
-    });
     document.getElementById("test-radius").addEventListener("mouseover", function(){
         if(testCircle) { testCircle.setMap(null); }
         testCircle = addCircle(Math.floor(document.getElementById('radius').value));
@@ -55,12 +52,6 @@ async function initMap() {
     });
     document.getElementById("submit-destination").addEventListener("click", async function () {
         routeId = await getRouteId(markers);
-        current_total_time = parseInt(document.getElementById('total-time').textContent, 10);
-        current_total_time += 1;
-        document.getElementById('total-time').textContent = current_total_time;
-        current_total_distance = parseInt(document.getElementById('total-distance').textContent, 10);
-        current_total_distance += 1;
-        document.getElementById('total-distance').textContent = current_total_distance;
         markers.marker2.gmpDraggable = false;
     });
 
@@ -144,13 +135,30 @@ function setNewPlace(latitude, longitude){
     Place.longitude = longitude;
 }
 
-function drawPolyline(markers){
-    if (markers.marker1 && markers.marker2) {
-        calculateRoute(map, markers.marker1.position, markers.marker2.position);
+async function drawPolyline(markers) {
+    const result = await calculateRoute(map, markers.marker1.position, markers.marker2.position);
+    if (result) {
+        return result;
     } else {
-        alert("Proszę wybrać dwa punkty na mapie.");
+        console.error('Failed to get route data.');
     }
+
+    // if (markers.marker1 && markers.marker2) {
+    //     return await calculateRoute(map, markers.marker1.position, markers.marker2.position)
+    //         .then(encodedPolyline => {
+    //             console.log('Encoded polyline:', encodedPolyline);
+    //             return escapeBackslashes(encodedPolyline);
+    //         })
+    //         .catch(error => {
+    //             console.error('Error during route calculation:', error);
+    //             throw error;
+    //         });
+    // } else {
+    //     alert("Proszę wybrać dwa punkty na mapie.");
+    //     return Promise.reject('Brak zaznaczonych punktów.');
+    // }
 }
+
 
 function getRouteId(markers){
     if (markers.marker1 && markers.marker2) {
@@ -269,11 +277,15 @@ function handleCloseButton(placeKey, selectButton) {
     placesInfoWindows[placeKey].close();
 }
 
-function handleSelectButton(placeKey) {
+async function handleSelectButton(placeKey) {
     let pinSvgStringSelected = getPinSvgString("selected");
     console.log('Select button clicked!');
     const position = placesMarkers[placeKey].position;
     placesMarkers[placeKey].map = null;
+    setNewPlace(position.lat, position.lng);
+    const address = await GetAddress(position.lat, position.lng);
+    listItems.push(address);
+    renderList();
 
     const parser = new DOMParser();
     const pinSvg = parser.parseFromString(
@@ -286,10 +298,20 @@ function handleSelectButton(placeKey) {
         position: {lat: position.lat, lng: position.lng},
         content: pinSvg,
     });
-    drawPolyline({marker1: mainMarker, marker2: SelectedPlaces[placeKey]});
+    const result = await drawPolyline({marker1: mainMarker, marker2: SelectedPlaces[placeKey]});
+    console.log(escapeBackslashes(result.polyline));
+    addLegToDB(mainMarker.position, SelectedPlaces[placeKey].position, escapeBackslashes(result.polyline));
+    current_total_time = parseInt(document.getElementById('total-time').textContent, 10);
+    current_total_time += Math.ceil(parseInt(result.time)/60);
+    document.getElementById('total-time').textContent = current_total_time;
+    current_total_distance = parseInt(document.getElementById('total-distance').textContent, 10);
+    current_total_distance += result.distance;
+    document.getElementById('total-distance').textContent = current_total_distance;
     mainMarker = SelectedPlaces[placeKey];
 }
-
+function escapeBackslashes(inputString) {
+    return inputString.replace(/\\/g, "\\\\");
+}
 function clearPlacesMarkers() {
     for (const key in placesMarkers) {
         placesMarkers[key].map = null;
@@ -340,7 +362,7 @@ async function handleSelection(selections, place) {
     }
 }
 
-function calculateRoute(map, origin, destination) {
+async function calculateRoute(map, origin, destination) {
     const requestBody = {
         origin: {
             location: {
@@ -358,47 +380,55 @@ function calculateRoute(map, origin, destination) {
                 }
             }
         },
-        travelMode: 'DRIVE'
+        travelMode: 'WALK'
     };
 
+    try {
+        const response = await fetch('https://routes.googleapis.com/directions/v2:computeRoutes', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Goog-Api-Key': 'AIzaSyABfgoEg2PzuIVn-M4myjE1gNesvBHWMHU',
+                'X-Goog-FieldMask': 'routes.distanceMeters,routes.duration,routes.polyline.encodedPolyline'
+            },
+            body: JSON.stringify(requestBody)
+        });
 
-    fetch('https://routes.googleapis.com/directions/v2:computeRoutes', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-Goog-Api-Key': 'AIzaSyABfgoEg2PzuIVn-M4myjE1gNesvBHWMHU',
-            'X-Goog-FieldMask': 'routes.distanceMeters,routes.duration,routes.polyline.encodedPolyline'
-        },
-        body: JSON.stringify(requestBody)
-    })
-        .then(response => response.json())
-        .then(data => {
-            console.log('Full response:', data);
-            if (data.routes && data.routes.length > 0) {
-                const route = data.routes[0];
-                console.log('Pełna odpowiedź:', data);
-                console.log('Odległość:', route.distanceMeters, 'meters');
-                console.log('Czas trwania:', route.duration, 'seconds');
+        const data = await response.json();
 
-                // Decode the polyline
-                const path = google.maps.geometry.encoding.decodePath(route.polyline.encodedPolyline);
+        console.log('Full response:', data);
 
-                // Render the polyline on the map
-                const intermediatePath = new google.maps.Polyline({
-                    path: path,
-                    geodesic: true,
-                    strokeColor: "#9E5FC2",
-                    strokeOpacity: 1.0,
-                    strokeWeight: 5,
-                });
+        if (data.routes && data.routes.length > 0) {
+            const route = data.routes[0];
+            console.log('Odległość:', route.distanceMeters, 'meters');
+            console.log('Czas trwania:', route.duration, 'seconds');
 
-                intermediatePath.setMap(map);
-            } else {
-                console.error('No routes found in the response.');
-            }
-        })
-        .catch(error => console.error('Error:', error));
+            // Decode the polyline
+            const path = google.maps.geometry.encoding.decodePath(route.polyline.encodedPolyline);
+
+            // Render the polyline on the map
+            const intermediatePath = new google.maps.Polyline({
+                path: path,
+                geodesic: true,
+                strokeColor: "#9E5FC2",
+                strokeOpacity: 1.0,
+                strokeWeight: 5,
+            });
+
+            intermediatePath.setMap(map);
+            return {
+                polyline: route.polyline.encodedPolyline,
+                distance: route.distanceMeters,
+                time: route.duration
+            };
+        } else {
+            console.error('No routes found in the response.');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+    }
 }
+
 
 async function calculateDistance(origin, destination) {
     const requestBody = {
@@ -418,7 +448,7 @@ async function calculateDistance(origin, destination) {
                 }
             }
         },
-        travelMode: 'DRIVE'
+        travelMode: 'WALK'
     };
 
 
@@ -466,10 +496,10 @@ async function addRouteToDB(origin, destination) {
             throw new Error('Network response was not ok');
         }
 
-        const routeId = await response.text();
-        console.log('Route ID:', routeId);
+        const tempRouteId = await response.text();
+        console.log('Route ID:', tempRouteId);
 
-        return routeId;
+        return tempRouteId;
     } catch (error) {
         console.error('Error saving route points:', error);
         return null;
@@ -477,36 +507,36 @@ async function addRouteToDB(origin, destination) {
 }
 
 
-// function addLegToDB(origin, destination, polyline) {
-//     fetch('/leg/save', {
-//         method: 'POST',
-//         headers: {
-//             'Content-Type': 'application/json',
-//         },
-//         body: JSON.stringify({
-//             origin: {
-//                 latitude: origin.lat(),
-//                 longitude: origin.lng()
-//             },
-//             destination: {
-//                 latitude: destination.lat(),
-//                 longitude: destination.lng()
-//             },
-//             polyline: polyline,
-//             routeId: routeId
-//         })
-//     })
-//         .then(response => {
-//             if (!response.ok) {
-//                 throw new Error('Network response was not ok');
-//             }
-//             return response.text();
-//         })
-//         .then(routeId => {
-//             console.log('Leg ID:', legId);  // Wyświetla id zapisanej trasy
-//         })
-//         .catch(error => console.error('Error saving route points:', error));
-// }
+function addLegToDB(origin, destination, polyline) {
+    fetch('/leg/save', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            origin: {
+                latitude: origin.lat,
+                longitude: origin.lng
+            },
+            destination: {
+                latitude: destination.lat,
+                longitude: destination.lng
+            },
+            polyline: polyline,
+            routeId: routeId
+        })
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.text();
+        })
+        .then(legId => {
+            console.log('Leg ID:', legId);  // Wyświetla id zapisanej trasy
+        })
+        .catch(error => console.error('Error saving route points:', error));
+}
 
 async function GetAddress(latitude, longitude) {
     try {
@@ -628,7 +658,7 @@ function renderList() {
     });
 }
 
-function generateGoogleMapsLink(points, travelMode = "driving") {
+function generateGoogleMapsLink(points, travelMode = "walking") {
     if (points.length < 2) {
         throw new Error("Musisz podać co najmniej dwa punkty: początkowy i końcowy.");
     }
