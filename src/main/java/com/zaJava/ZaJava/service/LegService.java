@@ -46,6 +46,7 @@ public class LegService {
                 .polyline(legRequest.getPolyline())
                 .points(points)
                 .build();
+        leg.setRoute(route);
         legRepository.save(leg);
 
         origin.setLeg(leg);
