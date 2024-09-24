@@ -16,7 +16,14 @@ let current_total_distance;
 let mainMarker;
 const SelectedPlaces = {};
 let routeId;
-
+$("#btn").click(function () {
+    $(".sidebar").toggleClass('active');
+});
+const entertainmentClickHandler = createClickHandler('entertainment', Place);
+const foodAndDrinkClickHandler = createClickHandler('foodAndDrink', Place);
+const cultureClickHandler = createClickHandler('culture', Place);
+const sportClickHandler = createClickHandler('sport', Place);
+const busStopClickHandler = createClickHandler('busStop', Place);
 
 async function initMap() {
     map = new google.maps.Map(document.getElementById('map'), {
@@ -44,16 +51,29 @@ async function initMap() {
     });
 
     // Actions after confirming origin and destination points
-    document.getElementById("submit-origin").addEventListener("click", async function () {
-        const address = await GetAddress(markers.marker1.position.lat, markers.marker1.position.lng);
-        listItems.push(address);
-        renderList();
-        markers.marker1.gmpDraggable = false;
+    document.getElementById("submit-origin").addEventListener("click", async function handleClick() {
+        document.getElementById("submit-origin").removeEventListener("click", handleClick);
+        try {
+            const address = await GetAddress(markers.marker1.position.lat, markers.marker1.position.lng);
+            listItems.push(address);
+            renderList();
+            markers.marker1.gmpDraggable = false;
+        } catch (error) {
+            console.log(error);
+            document.getElementById("submit-origin").addEventListener("click", handleClick);
+        }
     });
-    document.getElementById("submit-destination").addEventListener("click", async function () {
-        routeId = await getRouteId(markers);
-        markers.marker2.gmpDraggable = false;
+
+    document.getElementById("submit-destination").addEventListener("click", async function handleClick() {
+        document.getElementById("submit-destination").removeEventListener("click", handleClick);
+        try {
+            routeId = await getRouteId(markers);
+            markers.marker2.gmpDraggable = false;
+        } catch (error) {
+            document.getElementById("submit-destination").addEventListener("click", handleClick);
+        }
     });
+
 
     document.getElementById("link").addEventListener("click", async function () {
         if(routeId){
@@ -68,11 +88,16 @@ async function initMap() {
 }
 
 function handleSidebarButtons() {
-    document.getElementById("entertainmentAndRecreation").addEventListener('click', () => handleButtonClick('entertainment', Place));
-    document.getElementById("foodAndDrink").addEventListener('click', () => handleButtonClick('foodAndDrink', Place));
-    document.getElementById("culture").addEventListener('click', () => handleButtonClick('culture', Place));
-    document.getElementById("sport").addEventListener('click', () => handleButtonClick('sport', Place));
-    document.getElementById("busStop").addEventListener('click', () => handleButtonClick('busStop', Place));
+    document.getElementById("entertainmentAndRecreation").addEventListener('click', entertainmentClickHandler);
+    document.getElementById("foodAndDrink").addEventListener('click', foodAndDrinkClickHandler);
+    document.getElementById("culture").addEventListener('click', cultureClickHandler);
+    document.getElementById("sport").addEventListener('click', sportClickHandler);
+    document.getElementById("busStop").addEventListener('click', busStopClickHandler);
+}
+function createClickHandler(eventType, place) {
+    return function() {
+        handleButtonClick(eventType, place);
+    }
 }
 
 function setDefaultRadius(radius){
@@ -107,6 +132,67 @@ function addMapListener(){
                 gmpDraggable: true
             });
             addMarkerListener(markers[markerKey]);
+            if( i === 1 ){      // wszystkie akcje poniżej to kopia tego co dzieje się dla innych infowindow
+                const position = markers[markerKey].position;
+                const response = await calculateDistance(mainMarker.position, {lat: position.lat, lng: position.lng});
+                const distance = response.routes[0].distanceMeters;
+                let destinationInfoWindow = new google.maps.InfoWindow({
+                    content: getInfoWindowContentForDestination(GetAddress(position.lat, position.lng), distance),
+                    maxWidth: 270
+                });
+                markers[markerKey].addListener('click', function () {
+                    for(const key in placesInfoWindows) {
+                        if (placesInfoWindows[key].isOpen) {
+                            document.getElementById('close-button').click()
+                        }
+                    }
+                    destinationInfoWindow.open({
+                        anchor: markers[markerKey],
+                        map: map,
+                    });
+                    google.maps.event.addListenerOnce(destinationInfoWindow, 'domready', function () {
+                        const closeButton = $('#close-button');
+                        const selectButton = $('#select-button');
+
+                        async function handleButtonClick(event) {
+                            if (event.target.id === 'close-button') {
+                                selectButton.off('click');
+                                destinationInfoWindow.close();
+                            } else if (event.target.id === 'select-button') {
+                                document.getElementById("entertainmentAndRecreation").removeEventListener('click', entertainmentClickHandler);
+                                document.getElementById("foodAndDrink").removeEventListener('click', foodAndDrinkClickHandler);
+                                document.getElementById("culture").removeEventListener('click', cultureClickHandler);
+                                document.getElementById("sport").removeEventListener('click', sportClickHandler);
+                                document.getElementById("busStop").removeEventListener('click', busStopClickHandler);
+                                setNewPlace(position.lat, position.lng);
+                                const address = await GetAddress(position.lat, position.lng);
+                                listItems.push(address);
+                                renderList();
+
+                                const result = await drawPolyline({
+                                    marker1: mainMarker,
+                                    marker2: markers[markerKey]
+                                });
+                                console.log(escapeBackslashes(result.polyline));
+                                addLegToDB(mainMarker.position, position, escapeBackslashes(result.polyline));
+                                current_total_time = parseInt(document.getElementById('total-time').textContent, 10);
+                                current_total_time += Math.ceil(parseInt(result.time) / 60);
+                                document.getElementById('total-time').textContent = current_total_time;
+                                current_total_distance = parseInt(document.getElementById('total-distance').textContent, 10);
+                                current_total_distance += result.distance;
+                                document.getElementById('total-distance').textContent = current_total_distance;
+                                // mainMarker = markers[markerKey];
+                            }
+                        }
+
+                        closeButton.off('click');
+                        selectButton.off('click');
+
+                        closeButton.on('click', handleButtonClick);
+                        selectButton.on('click', handleButtonClick);
+                    });
+                });
+            }
             i += 1;
             if(i === 1) {
                 mainMarker = markers[markerKey];
@@ -143,20 +229,6 @@ async function drawPolyline(markers) {
         console.error('Failed to get route data.');
     }
 
-    // if (markers.marker1 && markers.marker2) {
-    //     return await calculateRoute(map, markers.marker1.position, markers.marker2.position)
-    //         .then(encodedPolyline => {
-    //             console.log('Encoded polyline:', encodedPolyline);
-    //             return escapeBackslashes(encodedPolyline);
-    //         })
-    //         .catch(error => {
-    //             console.error('Error during route calculation:', error);
-    //             throw error;
-    //         });
-    // } else {
-    //     alert("Proszę wybrać dwa punkty na mapie.");
-    //     return Promise.reject('Brak zaznaczonych punktów.');
-    // }
 }
 
 
@@ -168,7 +240,7 @@ function getRouteId(markers){
     }
 }
 
-const handleButtonClick = async (key, place) => {
+async function handleButtonClick(key, place){
     if (place !== undefined) {
         console.log("\n\n", selections, "\n\n")
         selections[key] = true;
@@ -186,7 +258,7 @@ const handleButtonClick = async (key, place) => {
     else {
         console.log("You should choose starting point first")
     }
-};
+}
 
 
 async function addMarkers(points) {
@@ -207,9 +279,6 @@ async function addMarkers(points) {
 
         const placeInformation = await getPlaceInfo(point.placeId);
 
-        //
-        /*  calculateDistance(place1, place2) {} <--------- Napisać to ale w innym miejscu i wywołać tutaj*/
-        //
 
         const response = await calculateDistance(mainMarker.position, {lat: point.latitude, lng: point.longitude});
         const distance = response.routes[0].distanceMeters;
@@ -238,7 +307,7 @@ async function addMarkers(points) {
             console.log(`Marker ${placeKey} clicked`);
             for(const key in placesInfoWindows) {
                 if (placesInfoWindows[key].isOpen) {
-                    document.getElementById('close-button').click()
+                    document.getElementById('close-button').click();
                 }
             }
             placesInfoWindows[placeKey].open({
@@ -253,8 +322,8 @@ async function addMarkers(points) {
 
 function handleMarkerClick(placeKey) {
     google.maps.event.addListenerOnce(placesInfoWindows[placeKey], 'domready', function () {
-        const closeButton = document.getElementById('close-button');
-        const selectButton = document.getElementById('select-button');
+        const closeButton = $('#close-button');
+        const selectButton = $('#select-button');
 
         function handleButtonClick(event) {
             if (event.target.id === 'close-button') {
@@ -264,16 +333,17 @@ function handleMarkerClick(placeKey) {
             }
         }
 
-        closeButton.removeEventListener('click', handleButtonClick);
-        selectButton.removeEventListener('click', handleButtonClick);
 
-        closeButton.addEventListener('click', handleButtonClick);
-        selectButton.addEventListener('click', handleButtonClick);
+        closeButton.off('click');
+        selectButton.off('click');
+
+        closeButton.on('click', handleButtonClick);
+        selectButton.on('click', handleButtonClick);
     });
 }
 
 function handleCloseButton(placeKey, selectButton) {
-    selectButton.removeEventListener('click', handleButtonClick);
+    selectButton.off('click');
     placesInfoWindows[placeKey].close();
 }
 
@@ -413,6 +483,13 @@ async function calculateRoute(map, origin, destination) {
                 strokeColor: "#9E5FC2",
                 strokeOpacity: 1.0,
                 strokeWeight: 5,
+            });
+
+            intermediatePath.addListener('mouseover', () => {
+                intermediatePath.setOptions({ strokeColor: '#00FF00' });
+            });
+            intermediatePath.addListener('mouseout', () => {
+                intermediatePath.setOptions({ strokeColor: '#9E5FC2' });
             });
 
             intermediatePath.setMap(map);
@@ -715,3 +792,52 @@ function getPinSvgString(type) {
         return '<svg width="45px" height="45px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">\n' + '  <defs>\n' + '    <path id="marker-a" d="M5,2 C4.44771525,2 4,1.55228475 4,1 C4,0.44771525 4.44771525,0 5,0 C5.55228475,0 6,0.44771525 6,1 C6,1.55228475 5.55228475,2 5,2 Z M11.1660156,4.88720703 C11.5270182,4.88753255 11.0398763,6.09019866 9.70458984,8.49520536 C8.36930339,10.9002121 6.80110677,12.8476111 5,14.3374023 C3.47981771,13.1349284 1.89029948,11.2677409 0.231445312,8.73583984 C1.1640625,9.98632812 3.83496094,10.6665039 5.96948242,7.01611328 C7.39249674,4.58251953 9.12467448,3.87288411 11.1660156,4.88720703 Z"/>\n' + '    <path id="marker-c" d="M8,22 C5.23620113,22 0,12.5164513 0,8.162063 C0,3.65933791 3.57653449,0 8,0 C12.4234655,0 16,3.65933791 16,8.162063 C16,12.5164513 10.7637989,22 8,22 Z M8,20 C8.39916438,20 9.97421309,18.1222923 11.3773555,15.5809901 C12.9364167,12.7572955 14,9.79929622 14,8.162063 C14,4.75379174 11.308521,2 8,2 C4.69147901,2 2,4.75379174 2,8.162063 C2,9.79929622 3.06358328,12.7572955 4.62264452,15.5809901 C6.02578691,18.1222923 7.60083562,20 8,20 Z M8,12 C5.790861,12 4,10.209139 4,8 C4,5.790861 5.790861,4 8,4 C10.209139,4 12,5.790861 12,8 C12,10.209139 10.209139,12 8,12 Z M8,10 C9.1045695,10 10,9.1045695 10,8 C10,6.8954305 9.1045695,6 8,6 C6.8954305,6 6,6.8954305 6,8 C6,9.1045695 6.8954305,10 8,10 Z"/>\n' + '  </defs>\n' + '  <g fill="none" fill-rule="evenodd" transform="translate(4 1)">\n' + '    <g transform="translate(3 7)">\n' + '      <mask id="marker-b" fill="#ffffff">\n' + '        <use xlink:href="#marker-a"/>\n' + '      </mask>\n' + '      <use fill="#D8D8D8" xlink:href="#marker-a"/>\n' + '      <g fill="#FFA0A0" mask="url(#marker-b)">\n' + '        <rect width="24" height="24" transform="translate(-7 -8)"/>\n' + '      </g>\n' + '    </g>\n' + '    <mask id="marker-d" fill="#ffffff">\n' + '      <use xlink:href="#marker-c"/>\n' + '    </mask>\n' + '    <use fill="#000000" fill-rule="nonzero" xlink:href="#marker-c"/>\n' + '    <g fill="#FFFF00" mask="url(#marker-d)">\n' + '      <rect width="24" height="24" transform="translate(-4 -1)"/>\n' + '    </g>\n' + '  </g>\n' + '</svg>';
     }
 }
+
+function getInfoWindowContentForDestination(placeName,distance) {
+    return `<head>
+                    <title>info-window</title>
+                    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.8.1/font/bootstrap-icons.min.css" rel="stylesheet">
+                </head>
+                <body>
+                <div style="
+                                padding: 10px;
+                              ">
+                    <style>
+                        .gm-style-iw-chr {display: none;}
+                        .info-window { padding: 10px; }
+                        .info-header { display: flex; justify-content: space-between; align-items: center; }
+                        .info-place { display: flex; align-items: center; }
+                        .bi-geo-alt-fill { margin-right: 8px; color: #7600FF}
+                        .info-distance { color: gray; margin-left: 20px}
+                        .info-buttons { margin-top: 50px; display: flex; justify-content: space-between; }
+                        .button {background-color: #7600FF; color: white; border: none; padding: 5px 10px; border-radius: 5px; font-size: 14px; cursor: pointer; transition: background-color 0.3s ease, transform 0.3s ease;}
+                        .button:hover {background-color: #5700CC; transform: scale(1.1);}
+                    </style>
+                
+                    <div class="info-window">
+                        <div class="info-header">
+                            <div class="info-place">
+                                <i class="bi bi-geo-alt-fill"></i>
+                                <div><strong>${placeName}</strong></div>
+                            </div>
+                            <div class="info-distance">${distance}m</div>
+                        </div>
+                      
+                        <div class="info-buttons">
+                            <button class="button" id="close-button">Close</button>
+                            <button class="button" id="select-button">Select and finish</button>
+                        </div>
+                    </div>
+                </div>
+                </body>
+            `
+}
+
+
+
+
+
+
+
+
+
