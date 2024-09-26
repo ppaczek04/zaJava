@@ -1,4 +1,4 @@
-package com.zaJava.ZaJava.places;
+package com.zaJava.ZaJava.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
