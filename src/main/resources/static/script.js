@@ -65,12 +65,19 @@ async function initMap() {
     });
 
     document.getElementById("submit-destination").addEventListener("click", async function handleClick() {
-        document.getElementById("submit-destination").removeEventListener("click", handleClick);
         try {
-            routeId = await getRouteId(markers);
-            markers.marker2.gmpDraggable = false;
+            if(!markers.marker1.gmpDraggable){
+                document.getElementById("submit-destination").removeEventListener("click", handleClick);
+                routeId = await getRouteId(markers);
+                markers.marker2.gmpDraggable = false;
+                handleSidebarButtons();
+            }
+            else{
+                alert("Submit home point first, please");
+            }
+
         } catch (error) {
-            document.getElementById("submit-destination").addEventListener("click", handleClick);
+            console.log(error);
         }
     });
 
@@ -83,8 +90,6 @@ async function initMap() {
             window.open(link, "_blank");
         }
     });
-
-    handleSidebarButtons();
 }
 
 function handleSidebarButtons() {
@@ -136,62 +141,11 @@ function addMapListener(){
                 const position = markers[markerKey].position;
                 const response = await calculateDistance(mainMarker.position, {lat: position.lat, lng: position.lng});
                 const distance = response.routes[0].distanceMeters;
-                let destinationInfoWindow = new google.maps.InfoWindow({
-                    content: getInfoWindowContentForDestination(GetAddress(position.lat, position.lng), distance),
+                placesInfoWindows['destination'] = new google.maps.InfoWindow({
+                    content: getInfoWindowContentForDestination(await GetAddress(position.lat, position.lng), distance),
                     maxWidth: 270
                 });
-                markers[markerKey].addListener('click', function () {
-                    for(const key in placesInfoWindows) {
-                        if (placesInfoWindows[key].isOpen) {
-                            document.getElementById('close-button').click()
-                        }
-                    }
-                    destinationInfoWindow.open({
-                        anchor: markers[markerKey],
-                        map: map,
-                    });
-                    google.maps.event.addListenerOnce(destinationInfoWindow, 'domready', function () {
-                        const closeButton = $('#close-button');
-                        const selectButton = $('#select-button');
-
-                        async function handleButtonClick(event) {
-                            if (event.target.id === 'close-button') {
-                                selectButton.off('click');
-                                destinationInfoWindow.close();
-                            } else if (event.target.id === 'select-button') {
-                                document.getElementById("entertainmentAndRecreation").removeEventListener('click', entertainmentClickHandler);
-                                document.getElementById("foodAndDrink").removeEventListener('click', foodAndDrinkClickHandler);
-                                document.getElementById("culture").removeEventListener('click', cultureClickHandler);
-                                document.getElementById("sport").removeEventListener('click', sportClickHandler);
-                                document.getElementById("busStop").removeEventListener('click', busStopClickHandler);
-                                setNewPlace(position.lat, position.lng);
-                                const address = await GetAddress(position.lat, position.lng);
-                                listItems.push(address);
-                                renderList();
-
-                                const result = await drawPolyline({
-                                    marker1: mainMarker,
-                                    marker2: markers[markerKey]
-                                });
-                                console.log(escapeBackslashes(result.polyline));
-                                addLegToDB(mainMarker.position, position, escapeBackslashes(result.polyline));
-                                current_total_time = parseInt(document.getElementById('total-time').textContent, 10);
-                                current_total_time += Math.ceil(parseInt(result.time) / 60);
-                                document.getElementById('total-time').textContent = current_total_time;
-                                current_total_distance = parseInt(document.getElementById('total-distance').textContent, 10);
-                                current_total_distance += result.distance;
-                                document.getElementById('total-distance').textContent = current_total_distance;
-                                // mainMarker = markers[markerKey];
-                            }
-                        }
-
-                        closeButton.off('click');
-                        selectButton.off('click');
-
-                        closeButton.on('click', handleButtonClick);
-                        selectButton.on('click', handleButtonClick);
-                    });
-                });
+                addDestinationMarkerListener(markers[markerKey]);
             }
             i += 1;
             if(i === 1) {
@@ -200,6 +154,51 @@ function addMapListener(){
         }
     });
     return markers;
+}
+
+function addDestinationMarkerListener(marker){
+    const position = marker.position;
+    marker.addListener('click', function () {
+        closeOtherInfoWindows();
+        placesInfoWindows['destination'].open({
+            anchor: marker,
+            map: map,
+        });
+        google.maps.event.addListenerOnce(placesInfoWindows['destination'], 'domready', function () {
+            const closeButton = $('#close-button');
+            const selectButton = $('#select-button');
+
+            async function handleButtonClick(event) {
+                if (event.target.id === 'close-button') {
+                    handleCloseButton('destination', selectButton);
+                } else if (event.target.id === 'select-button') {
+                    removeTypesEventListeners();
+                    setNewPlace(position.lat, position.lng);
+                    const address = await GetAddress(position.lat, position.lng);
+                    listItems.push(address);
+                    renderList();
+                    clearPlacesMarkers();
+                    if(mainCircle) { mainCircle.setMap(null); }
+                    const result = await drawPolyline({
+                        marker1: mainMarker,
+                        marker2: marker
+                    });
+                    console.log(escapeBackslashes(result.polyline));
+                    addLegToDB(mainMarker.position, position, escapeBackslashes(result.polyline));
+                    updateDistanceAndTime(result);
+                }
+            }
+            refreshButtons(closeButton, selectButton, handleButtonClick);
+        });
+    });
+}
+
+function removeTypesEventListeners(){
+    document.getElementById("entertainmentAndRecreation").removeEventListener('click', entertainmentClickHandler);
+    document.getElementById("foodAndDrink").removeEventListener('click', foodAndDrinkClickHandler);
+    document.getElementById("culture").removeEventListener('click', cultureClickHandler);
+    document.getElementById("sport").removeEventListener('click', sportClickHandler);
+    document.getElementById("busStop").removeEventListener('click', busStopClickHandler);
 }
 
 function addMarkerListener(marker){
@@ -305,11 +304,7 @@ async function addMarkers(points) {
 
         placesMarkers[placeKey].addListener('click', function () {
             console.log(`Marker ${placeKey} clicked`);
-            for(const key in placesInfoWindows) {
-                if (placesInfoWindows[key].isOpen) {
-                    document.getElementById('close-button').click();
-                }
-            }
+            closeOtherInfoWindows();
             placesInfoWindows[placeKey].open({
                 anchor: placesMarkers[placeKey],
                 map: map,
@@ -317,6 +312,14 @@ async function addMarkers(points) {
             handleMarkerClick(placeKey);
             });
             i += 1;
+    }
+}
+
+function closeOtherInfoWindows(){
+    for(const key in placesInfoWindows) {
+        if (placesInfoWindows[key].isOpen) {
+            document.getElementById('close-button').click();
+        }
     }
 }
 
@@ -332,13 +335,7 @@ function handleMarkerClick(placeKey) {
                 handleSelectButton(placeKey);
             }
         }
-
-
-        closeButton.off('click');
-        selectButton.off('click');
-
-        closeButton.on('click', handleButtonClick);
-        selectButton.on('click', handleButtonClick);
+        refreshButtons(closeButton, selectButton, handleButtonClick);
     });
 }
 
@@ -362,7 +359,7 @@ async function handleSelectButton(placeKey) {
         pinSvgStringSelected,
         "image/svg+xml",
     ).documentElement;
-
+    if(mainCircle) { mainCircle.setMap(null); }
     SelectedPlaces[placeKey] = new google.maps.marker.AdvancedMarkerElement({
         map: map,
         position: {lat: position.lat, lng: position.lng},
@@ -371,13 +368,9 @@ async function handleSelectButton(placeKey) {
     const result = await drawPolyline({marker1: mainMarker, marker2: SelectedPlaces[placeKey]});
     console.log(escapeBackslashes(result.polyline));
     addLegToDB(mainMarker.position, SelectedPlaces[placeKey].position, escapeBackslashes(result.polyline));
-    current_total_time = parseInt(document.getElementById('total-time').textContent, 10);
-    current_total_time += Math.ceil(parseInt(result.time)/60);
-    document.getElementById('total-time').textContent = current_total_time;
-    current_total_distance = parseInt(document.getElementById('total-distance').textContent, 10);
-    current_total_distance += result.distance;
-    document.getElementById('total-distance').textContent = current_total_distance;
+    updateDistanceAndTime(result);
     mainMarker = SelectedPlaces[placeKey];
+
 }
 function escapeBackslashes(inputString) {
     return inputString.replace(/\\/g, "\\\\");
@@ -387,6 +380,22 @@ function clearPlacesMarkers() {
         placesMarkers[key].map = null;
         delete placesMarkers[key];
     }
+}
+
+function refreshButtons(closeButton, selectButton, functionName){
+    closeButton.off('click');
+    selectButton.off('click');
+    closeButton.on('click', functionName);
+    selectButton.on('click', functionName);
+}
+
+function updateDistanceAndTime(result){
+    current_total_time = parseInt(document.getElementById('total-time').textContent, 10);
+    current_total_time += Math.ceil(parseInt(result.time) / 60);
+    document.getElementById('total-time').textContent = current_total_time;
+    current_total_distance = parseInt(document.getElementById('total-distance').textContent, 10);
+    current_total_distance += result.distance;
+    document.getElementById('total-distance').textContent = current_total_distance;
 }
 
 function addCircle(radius){
@@ -811,6 +820,7 @@ function getInfoWindowContentForDestination(placeName,distance) {
                         .info-distance { color: gray; margin-left: 20px}
                         .info-buttons { margin-top: 50px; display: flex; justify-content: space-between; }
                         .button {background-color: #7600FF; color: white; border: none; padding: 5px 10px; border-radius: 5px; font-size: 14px; cursor: pointer; transition: background-color 0.3s ease, transform 0.3s ease;}
+                        .select-button { margin-left: 10px; }
                         .button:hover {background-color: #5700CC; transform: scale(1.1);}
                     </style>
                 
