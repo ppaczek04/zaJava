@@ -3,27 +3,28 @@ package com.zaJava.ZaJava.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @Entity
 @Table(
-        name = "point_tbl"
+        name = "places"
 )
-public class MapPoint {
+public class Place {
     @Id
     @GeneratedValue
     private Integer id;
-    private String nameOfPlace;
+//    private String name;
     private double  latitude;
     private double longitude;
 
-    @ManyToOne
-    @JoinColumn(name = "leg_id")
-    private Leg leg;
 
-    @ManyToOne
-    @JoinColumn(name = "routeId")
-    private Route route;
+    @OneToOne(mappedBy = "home")
+    private Route homeRoute;
+
+    @OneToOne(mappedBy = "destination")
+    private Route destinationRoute;
 }

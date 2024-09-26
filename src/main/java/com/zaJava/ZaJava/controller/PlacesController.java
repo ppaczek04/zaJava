@@ -1,5 +1,8 @@
-package com.zaJava.ZaJava.places;
+package com.zaJava.ZaJava.controller;
 
+import com.zaJava.ZaJava.model.PlaceDto;
+import com.zaJava.ZaJava.service.PlacesService;
+import com.zaJava.ZaJava.service.TypesLists;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 

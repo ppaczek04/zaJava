@@ -15,11 +15,16 @@ let current_total_time;
 let current_total_distance;
 let mainMarker;
 const SelectedPlaces = {};
+let routes = [];
 let routeId;
 
 
 $("#btn").click(function () {
     $(".sidebar").toggleClass('active');
+});
+
+$('#test_button').on('click', function() {
+    addJourneyToDatabase("test_journey", routes);
 });
 
 async function initMap() {
@@ -322,7 +327,7 @@ async function handleSelectButton(placeKey) {
     });
     const result = await drawPolyline({marker1: mainMarker, marker2: SelectedPlaces[placeKey]});
     console.log(escapeBackslashes(result.polyline));
-    addLegToDB(mainMarker.position, SelectedPlaces[placeKey].position, escapeBackslashes(result.polyline));
+    // addLegToDB(mainMarker.position, SelectedPlaces[placeKey].position, escapeBackslashes(result.polyline));
     current_total_time = parseInt(document.getElementById('total-time').textContent, 10);
     current_total_time += Math.ceil(parseInt(result.time)/60);
     document.getElementById('total-time').textContent = current_total_time;
@@ -405,6 +410,7 @@ async function calculateRoute(map, origin, destination) {
         travelMode: 'WALK'
     };
 
+
     try {
         const response = await fetch('https://routes.googleapis.com/directions/v2:computeRoutes', {
             method: 'POST',
@@ -437,14 +443,23 @@ async function calculateRoute(map, origin, destination) {
                 strokeWeight: 5,
             });
 
-                intermediatePath.addListener('mouseover', () => {
-                    intermediatePath.setOptions({ strokeColor: '#00FF00' });
-                });
-                intermediatePath.addListener('mouseout', () => {
-                    intermediatePath.setOptions({ strokeColor: '#9E5FC2' });
-                });
+            intermediatePath.addListener('mouseover', () => {
+                intermediatePath.setOptions({ strokeColor: '#00FF00' });
+            });
+            intermediatePath.addListener('mouseout', () => {
+                intermediatePath.setOptions({ strokeColor: '#9E5FC2' });
+            });
 
-                intermediatePath.setMap(map);
+            intermediatePath.setMap(map);
+
+            routes.push({
+                polyline: route.polyline.encodedPolyline,
+                home: {latitude: origin.lat, longitude: origin.lng},
+                destination: {latitude: destination.lat, longitude: destination.lng},
+                details: {distance: route.distanceMeters, time: route.duration}
+            })
+
+
             return {
                 polyline: route.polyline.encodedPolyline,
                 distance: route.distanceMeters,
@@ -499,72 +514,99 @@ async function calculateDistance(origin, destination) {
     console.log('Information: ', distance);
     return distance;
 }
-async function addRouteToDB(origin, destination) {
+
+// async function addRouteToDB(origin, destination) {
+//     try {
+//         const response = await fetch('/route/save', {
+//             method: 'POST',
+//             headers: {
+//                 'Content-Type': 'application/json',
+//             },
+//             body: JSON.stringify({
+//                 origin: {
+//                     latitude: origin.lat,
+//                     longitude: origin.lng,
+//                     name: "origin"
+//                 },
+//                 destination: {
+//                     latitude: destination.lat,
+//                     longitude: destination.lng,
+//                     name: "destination"
+//                 }
+//             })
+//         });
+//
+//         if (!response.ok) {
+//             throw new Error('Network response was not ok');
+//         }
+//
+//         const tempRouteId = await response.text();
+//         console.log('Route ID:', tempRouteId);
+//
+//         return tempRouteId;
+//     } catch (error) {
+//         console.error('Error saving route points:', error);
+//         return null;
+//     }
+// }
+//
+//
+// function addLegToDB(origin, destination, polyline) {
+//     fetch('/leg/save', {
+//         method: 'POST',
+//         headers: {
+//             'Content-Type': 'application/json',
+//         },
+//         body: JSON.stringify({
+//             origin: {
+//                 latitude: origin.lat,
+//                 longitude: origin.lng
+//             },
+//             destination: {
+//                 latitude: destination.lat,
+//                 longitude: destination.lng
+//             },
+//             polyline: polyline,
+//             routeId: routeId
+//         })
+//     })
+//         .then(response => {
+//             if (!response.ok) {
+//                 throw new Error('Network response was not ok');
+//             }
+//             return response.text();
+//         })
+//         .then(legId => {
+//             console.log('Leg ID:', legId);  // Wyświetla id zapisanej trasy
+//         })
+//         .catch(error => console.error('Error saving route points:', error));
+// }
+
+// routes(home, destination, polyline, details) <- ma takie cos
+async function addJourneyToDatabase(title, routes){
+    const requestBody = {
+        "title": title,
+        "routes": routes
+    }
+
     try {
-        const response = await fetch('/route/save', {
+        const response = await fetch('/journey/save', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-
             },
-            body: JSON.stringify({
-                origin: {
-                    latitude: origin.lat,
-                    longitude: origin.lng,
-                    name: "origin"
-                },
-                destination: {
-                    latitude: destination.lat,
-                    longitude: destination.lng,
-                    name: "destination"
-                }
-            })
+            body: JSON.stringify(requestBody),
         });
 
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        const tempRouteId = await response.text();
-        console.log('Route ID:', tempRouteId);
-
-        return tempRouteId;
+        const data = await response.json();
+        console.log('Success:', data);
     } catch (error) {
-        console.error('Error saving route points:', error);
-        return null;
+        console.error('Error:', error);
     }
-}
-
-
-function addLegToDB(origin, destination, polyline) {
-    fetch('/leg/save', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            origin: {
-                latitude: origin.lat,
-                longitude: origin.lng
-            },
-            destination: {
-                latitude: destination.lat,
-                longitude: destination.lng
-            },
-            polyline: polyline,
-            routeId: routeId
-        })
-    })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.text();
-        })
-        .then(legId => {
-            console.log('Leg ID:', legId);  // Wyświetla id zapisanej trasy
-        })
-        .catch(error => console.error('Error saving route points:', error));
 }
 
 async function GetAddress(latitude, longitude) {

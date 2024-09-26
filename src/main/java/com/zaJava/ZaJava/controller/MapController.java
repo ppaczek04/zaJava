@@ -1,10 +1,12 @@
 package com.zaJava.ZaJava.controller;
 
 import com.zaJava.ZaJava.model.Location;
+import com.zaJava.ZaJava.model.Point;
 import com.zaJava.ZaJava.model.ProcessSelectionsRequest;
 import com.zaJava.ZaJava.model.Selections;
-import com.zaJava.ZaJava.places.*;
 import com.zaJava.ZaJava.service.MapService;
+import com.zaJava.ZaJava.service.PlacesMapper;
+import com.zaJava.ZaJava.service.PlacesService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

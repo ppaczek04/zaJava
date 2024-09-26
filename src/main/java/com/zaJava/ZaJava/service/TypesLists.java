@@ -1,6 +1,4 @@
-package com.zaJava.ZaJava.places;
-
-import org.springframework.stereotype.Service;
+package com.zaJava.ZaJava.service;
 
 //@Service
 public class TypesLists {

@@ -1,9 +1,13 @@
-package com.zaJava.ZaJava.places;
+package com.zaJava.ZaJava.service;
 
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
+
+import com.zaJava.ZaJava.model.LocationDto;
+import com.zaJava.ZaJava.model.PlacesDto;
+import com.zaJava.ZaJava.model.Point;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
