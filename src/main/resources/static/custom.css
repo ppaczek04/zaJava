@@ -21,15 +21,15 @@
 }
 #modal .tooltip-container {
     position: absolute;
-    top: 80%;
-    left: 10%;
+    bottom: 20px;
+    left: 5%;
     display: inline-block;
 }
 
 #modal .save-container {
     position: absolute;
-    top: 80%;
-    left: 30%;
+    bottom: 20px;
+    left: 15%;
     display: inline-block;
 }
 
