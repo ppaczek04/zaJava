@@ -16,10 +16,7 @@ let current_total_distance;
 let mainMarker;
 const SelectedPlaces = {};
 let routes = [];
-let routeId;
-$("#btn").click(function () {
-    $(".sidebar").toggleClass('active');
-});
+//let routeId;
 const entertainmentClickHandler = createClickHandler('entertainment', Place);
 const foodAndDrinkClickHandler = createClickHandler('foodAndDrink', Place);
 const cultureClickHandler = createClickHandler('culture', Place);
@@ -77,7 +74,7 @@ async function initMap() {
         try {
             if(!markers.marker1.gmpDraggable){
                 document.getElementById("submit-destination").removeEventListener("click", handleClick);
-                routeId = await getRouteId(markers);
+                //routeId = await getRouteId(markers);
                 markers.marker2.gmpDraggable = false;
                 handleSidebarButtons();
             }
@@ -90,15 +87,14 @@ async function initMap() {
         }
     });
 
-
-    document.getElementById("link").addEventListener("click", async function () {
-        if(routeId){
-            let routeCoords = await getRouteCoords(routeId);
-            let link = generateGoogleMapsLink(routeCoords);
-            console.log("Link do Google Maps:", link);
-            window.open(link, "_blank");
-        }
-    });
+    // document.getElementById("link").addEventListener("click", async function () {
+    //     if(routeId){
+    //         let routeCoords = await getRouteCoords(routeId);
+    //         let link = generateGoogleMapsLink(routeCoords);
+    //         console.log("Link do Google Maps:", link);
+    //         window.open(link, "_blank");
+    //     }
+    // });
 }
 
 function handleSidebarButtons() {
@@ -108,6 +104,7 @@ function handleSidebarButtons() {
     document.getElementById("sport").addEventListener('click', sportClickHandler);
     document.getElementById("busStop").addEventListener('click', busStopClickHandler);
 }
+
 function createClickHandler(eventType, place) {
     return function() {
         handleButtonClick(eventType, place);
