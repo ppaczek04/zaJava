@@ -1,9 +1,12 @@
 package com.zaJava.ZaJava.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
-import lombok.*;
-
-import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
@@ -11,34 +14,31 @@ import java.util.List;
 @Builder
 @Entity
 @Table(
-        name = "route_tbl"
+        name = "routes"
 )
 public class Route {
     @Id
-    @GeneratedValue
-//            (
-//            strategy = GenerationType.TABLE,
-//            generator = "route_id_gen"
-//    )
-//    @SequenceGenerator(
-//            name= "route_sequence",
-//            sequenceName = "route_sequence",
-//            allocationSize = 1
-//    )
-//    @TableGenerator(
-//            name = "route_id_gen",
-//            table = "id_generator",
-//            pkColumnName = "id_name",
-//            valueColumnName = "id_value",
-//            allocationSize = 1
-//    )
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    private int distance;
-    private int time;
+    @Column(
+            nullable = false
+    )
+    private String polyline;
 
-    @OneToMany(mappedBy = "route")
-    private List<Leg> legs;
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "home_id")
+    private Place home;
 
-    @OneToMany(mappedBy = "route")
-    private List<MapPoint> points;
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "destination_id")
+    private Place destination;
+
+    @ManyToOne
+    @JoinColumn(name = "journey_id")
+    @JsonBackReference
+    private Journey journey;
+
+    @OneToOne(mappedBy = "route", cascade = CascadeType.ALL)
+    @JsonManagedReference
+    private RouteDetails details;
 }

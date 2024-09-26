@@ -4,7 +4,6 @@ package com.zaJava.ZaJava.service;
 import com.zaJava.ZaJava.model.GeocodingResponse;
 import com.zaJava.ZaJava.model.Location;
 import com.zaJava.ZaJava.model.Selections;
-import com.zaJava.ZaJava.places.TypesLists;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;

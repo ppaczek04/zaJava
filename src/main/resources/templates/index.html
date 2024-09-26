@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js" integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0" crossorigin="anonymous"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <link rel="stylesheet" type="text/css" href="/custom.css"/>
 </head>
 <body>
@@ -120,6 +121,14 @@
                     </a>
                     <span class="tooltip">See your current checkpoints</span>
                 </li>
+
+                <li>
+                    <a href="#modal" id="test_button">
+                        <i class="bi bi-map"></i>
+                        <span class="nav-item">TEST_BUTTON</span>
+                    </a>
+                    <span class="tooltip">TEST_BUTTON</span>
+                </li>
             </ul>
         </div>
     </div>
@@ -141,14 +150,14 @@
         </div>
     </div>
 
-<script>
-    let btn = document.querySelector('#btn');
-    let sidebar = document.querySelector('.sidebar');
+<!--<script>-->
+<!--    let btn = document.querySelector('#btn');-->
+<!--    let sidebar = document.querySelector('.sidebar');-->
 
-    btn.onclick = function () {
-        sidebar.classList.toggle('active');
-    };
-</script>
+<!--    btn.onclick = function () {-->
+<!--        sidebar.classList.toggle('active');-->
+<!--    };-->
+<!--</script>-->
 
 <script th:inline="javascript">
     /*<![CDATA[*/
@@ -167,10 +176,10 @@
     }
     /*]]>*/
 </script>
-    <script th:inline="javascript" src="/script.js"></script>
-    <script async defer th:src="@{${'https://maps.googleapis.com/maps/api/js?key=' +
-        @environment.getProperty('google.api.key') + '&callback=initMap&libraries=geometry,places,marker,maps,core'}}">
-    </script>
+<script th:inline="javascript" src="/script.js"></script>
+<script async defer th:src="@{${'https://maps.googleapis.com/maps/api/js?key=' +
+    @environment.getProperty('google.api.key') + '&callback=initMap&libraries=geometry,places,marker,maps,core'}}">
+</script>
 
 </body>
 </html>
