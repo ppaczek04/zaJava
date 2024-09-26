@@ -21,8 +21,15 @@
 }
 #modal .tooltip-container {
     position: absolute;
-    top: 80%;
-    left: 10%;
+    bottom: 20px;
+    left: 5%;
+    display: inline-block;
+}
+
+#modal .save-container {
+    position: absolute;
+    bottom: 20px;
+    left: 15%;
     display: inline-block;
 }
 
@@ -60,10 +67,14 @@
     visibility: visible;
     opacity: 1;
 }
+#modal .save-container:hover .modaltip {
+    visibility: visible;
+    opacity: 1;
+}
 
 #modal .link-btn {
     color: white;
-    background-color: #2c3e50;
+    background: none;
     border: none;
     padding: 10px 20px;
     cursor: pointer;
@@ -275,6 +286,7 @@
 .sidebar.active .types {
     border: 2px solid white;
     border-radius: 10px;
+    margin-top: 40px;
 }
 
 
@@ -282,16 +294,12 @@
     opacity: 1;
 }
 
-
 .sidebar.active ul li .tooltip {
     display: none;
 }
 
 .sidebar.active #btn {
     left: 90%;
-}
-.sidebar.active .types{
-    margin-top: 40px;
 }
 
 .sidebar .flexbox {
@@ -309,6 +317,61 @@
 
 .sidebar.active .homeAndDestination {
     display: none;
+}
+
+.offcanvas-start {
+    background-color: #2c3e50;
+}
+
+.offcanvas .btn-close {
+    border: none;
+    background-color: white;
+}
+
+.offcanvas .offcanvas-header {
+    color: white;
+    font-size: 20px;
+}
+
+.offcanvas .offcanvas-body {
+    color: white;
+    text-align: center;
+    font-size: 18px;
+}
+
+.offcanvas .offcanvas-body ul {
+    list-style-type: none;
+}
+
+.btn-new-route {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    z-index: 10;
+    background: none;
+    border: none;
+    color: white;
+}
+.btn-new-route:hover {
+    background: none;
+    border: none;
+    color: limegreen;
+}
+
+
+.offcanvas ul li {
+    margin-top: 25px;
+}
+
+.offcanvas .trip-item {
+    color: white;
+    font-size: 25px;
+    text-decoration: none;
+}
+
+.offcanvas .trip-item:hover {
+    color: limegreen;
+    text-decoration: none;
 }
 
 .main-content {
