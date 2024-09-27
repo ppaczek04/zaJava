@@ -11,7 +11,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js" integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0" crossorigin="anonymous"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <link rel="stylesheet" type="text/css" href="/custom.css"/>
 </head>
@@ -19,10 +19,8 @@
     <div id="modal">
         <div class="modal-content">
             <div class="header">
-                <h2 contenteditable="true" id="editable-title">Your journey</h2>
-<!--                <button id="edit-button" aria-label="Edit title">-->
-                    <i class="bi bi-pencil-square"></i>
-<!--                </button>-->
+                <h2 contenteditable="true" id="editable-title">My journey</h2>
+                <i class="bi bi-pencil-square"></i>
             </div>
             <div class="copy">
                 <ul id="dynamic-list"></ul>
@@ -139,14 +137,6 @@
                         <span class="nav-item">Your history</span>
                     </a>
                     <span class="tooltip">See saved routes!</span>
-                </li>
-
-                <li>
-                    <a href="#modal" id="test_button">
-                        <i class="bi bi-map"></i>
-                        <span class="nav-item">TEST_BUTTON</span>
-                    </a>
-                    <span class="tooltip">TEST_BUTTON</span>
                 </li>
             </ul>
         </div>
