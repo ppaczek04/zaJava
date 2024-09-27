@@ -27,9 +27,6 @@ $("#btn").click(function () {
     $(".sidebar").toggleClass('active');
 });
 
-$('#test_button').on('click', function() {
-    addJourneyToDatabase("test_journey", routes);
-});
 
 async function initMap() {
     map = new google.maps.Map(document.getElementById('map'), {
@@ -358,6 +355,11 @@ async function handleSelectButton(placeKey, marker = null) {
         result = await drawPolyline({
             marker1: mainMarker,
             marker2: marker
+        });
+        $('#save').on('click', function() {
+            const titleElement = document.getElementById('editable-title');
+            const titleText = titleElement.textContent;
+            addJourneyToDatabase(titleText, routes);
         });
     }
     else{

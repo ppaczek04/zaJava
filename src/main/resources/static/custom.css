@@ -85,6 +85,36 @@
     top:50%;
     visibility: visible;
 }
+#modal .header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 20px;
+}
+#modal .header i {
+        font-size: 1.2rem;
+        color: white;
+        margin-left: 20px;
+}
+#editable-title {
+    border: none;
+    outline: none;
+    min-width: 200px;
+    max-width: calc(100% - 60px);
+    margin: 0 10px;
+    text-align: center;
+}
+/*#edit-button {*/
+/*    background: none;*/
+/*    border: none;*/
+/*    cursor: pointer;*/
+/*}*/
+/*#edit-button i {*/
+/*    font-size: 1.2rem;*/
+/*    color: white;*/
+/*    margin-left: 20px;*/
+/*}*/
+
 #modal .header,#modal .footer {
     border-bottom: 1px solid #2c3e50;
     border-radius: 5px 5px 0 0;
@@ -140,7 +170,6 @@
     width: 100%;
     z-index: 900;
 }
-
 
 .sidebar {
     position: absolute;
