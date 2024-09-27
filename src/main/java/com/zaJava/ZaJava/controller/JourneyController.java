@@ -2,7 +2,9 @@ package com.zaJava.ZaJava.controller;
 
 import com.zaJava.ZaJava.model.Journey;
 import com.zaJava.ZaJava.service.JourneyService;
+import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,9 +24,25 @@ public class JourneyController {
     }
 
     @PostMapping("/save")
-    public ResponseEntity<Journey> saveJourney(@RequestBody Journey journey) {
+    public ResponseEntity<?> saveJourney(@RequestBody Journey journey) {
+        try {
+            Journey savedJourney = journeyService.saveJourney(journey);
+            return ResponseEntity.status(HttpStatus.CREATED).body(savedJourney);
 
-        Journey savedJourney = journeyService.saveJourney(journey);
-        return new ResponseEntity<>(savedJourney, HttpStatus.CREATED);
+        } catch (DataIntegrityViolationException e) {
+            if (e.getCause() instanceof ConstraintViolationException constraintEx) {
+                if (constraintEx.getConstraintName().equals("journeys_title_key")) {
+                    return ResponseEntity.status(HttpStatus.CONFLICT).body("Journey title already exists.");
+                }
+            }
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Database error occurred.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred.");
+        }
     }
+//    public ResponseEntity<Journey> saveJourney(@RequestBody Journey journey) {
+//
+//        Journey savedJourney = journeyService.saveJourney(journey);
+//        return new ResponseEntity<>(savedJourney, HttpStatus.CREATED);
+//    }
 }

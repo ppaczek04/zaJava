@@ -16,10 +16,6 @@ let current_total_distance;
 let mainMarker;
 const SelectedPlaces = {};
 let routes = [];
-let routeId;
-$("#btn").click(function () {
-    $(".sidebar").toggleClass('active');
-});
 const entertainmentClickHandler = createClickHandler('entertainment', Place);
 const foodAndDrinkClickHandler = createClickHandler('foodAndDrink', Place);
 const cultureClickHandler = createClickHandler('culture', Place);
@@ -28,10 +24,6 @@ const busStopClickHandler = createClickHandler('busStop', Place);
 
 $("#btn").click(function () {
     $(".sidebar").toggleClass('active');
-});
-
-$('#test_button').on('click', function() {
-    addJourneyToDatabase("test_journey", routes);
 });
 
 async function initMap() {
@@ -67,6 +59,9 @@ async function initMap() {
             listItems.push(address);
             renderList();
             markers.marker1.gmpDraggable = false;
+            $('.submit-btn').on('click', function() {
+                $(this).addClass('clicked');
+            });
         } catch (error) {
             console.log(error);
             document.getElementById("submit-origin").addEventListener("click", handleClick);
@@ -77,7 +72,6 @@ async function initMap() {
         try {
             if(!markers.marker1.gmpDraggable){
                 document.getElementById("submit-destination").removeEventListener("click", handleClick);
-                routeId = await getRouteId(markers);
                 markers.marker2.gmpDraggable = false;
                 handleSidebarButtons();
             }
@@ -89,16 +83,6 @@ async function initMap() {
             console.log(error);
         }
     });
-
-
-    document.getElementById("link").addEventListener("click", async function () {
-        if(routeId){
-            let routeCoords = await getRouteCoords(routeId);
-            let link = generateGoogleMapsLink(routeCoords);
-            console.log("Link do Google Maps:", link);
-            window.open(link, "_blank");
-        }
-    });
 }
 
 function handleSidebarButtons() {
@@ -108,6 +92,7 @@ function handleSidebarButtons() {
     document.getElementById("sport").addEventListener('click', sportClickHandler);
     document.getElementById("busStop").addEventListener('click', busStopClickHandler);
 }
+
 function createClickHandler(eventType, place) {
     return function() {
         handleButtonClick(eventType, place);
@@ -219,15 +204,6 @@ async function drawPolyline(markers) {
 
 }
 
-
-function getRouteId(markers){
-    if (markers.marker1 && markers.marker2) {
-       return addRouteToDB(markers.marker1.position, markers.marker2.position);
-    } else {
-        alert("Proszę wybrać dwa punkty na mapie.");
-    }
-}
-
 async function handleButtonClick(key, place){
     if (place !== undefined) {
         console.log("\n\n", selections, "\n\n")
@@ -310,27 +286,6 @@ function closeOtherInfoWindows(){
     }
 }
 
-// function handleMarkerClick(placeKey) {
-//     google.maps.event.addListenerOnce(placesInfoWindows[placeKey], 'domready', function () {
-//         const closeButton = document.getElementById('close-button');
-//         const selectButton = document.getElementById('select-button');
-//
-//         function handleButtonClick(event) {
-//             if (event.target.id === 'close-button') {
-//                 handleCloseButton(placeKey, selectButton);
-//             } else if (event.target.id === 'select-button') {
-//                 handleSelectButton(placeKey);
-//             }
-//         }
-//
-//         closeButton.removeEventListener('click', handleButtonClick);
-//         selectButton.removeEventListener('click', handleButtonClick);
-//
-//         closeButton.addEventListener('click', handleButtonClick);
-//         selectButton.addEventListener('click', handleButtonClick);
-//     });
-// }
-
 function handleMarkerClick(placeKey, marker = null) {
         google.maps.event.addListenerOnce(placesInfoWindows[placeKey], 'domready', function () {
         const closeButton = $('#close-button');
@@ -362,6 +317,17 @@ async function handleSelectButton(placeKey, marker = null) {
             marker1: mainMarker,
             marker2: marker
         });
+        $('#save').on('click', function() {
+            const titleElement = document.getElementById('editable-title');
+            const titleText = titleElement.textContent;
+            addJourneyToDatabase(titleText, routes);
+        });
+        // document.getElementById("link").addEventListener("click", async function () {
+        //     const journeyCoords = getCoords(); // dopisać funkcję i endpoint do pobrania punktów trasy, chyba że jest jakiś inny sposób
+        //     const link = generateGoogleMapsLink(journeyCoords);
+        //     console.log("Link do Google Maps:", link);
+        //     window.open(link, "_blank");
+        // });
     }
     else{
         console.log('Select button clicked!');
@@ -389,7 +355,6 @@ async function handleSelectButton(placeKey, marker = null) {
     listItems.push(address);
     renderList();
     updateDistanceAndTime(result);
-    // addLegToDB(mainMarker.position, SelectedPlaces[placeKey].position, escapeBackslashes(result.polyline));
 }
 
 function escapeBackslashes(inputString) {
@@ -587,73 +552,6 @@ async function calculateDistance(origin, destination) {
     return distance;
 }
 
-// async function addRouteToDB(origin, destination) {
-//     try {
-//         const response = await fetch('/route/save', {
-//             method: 'POST',
-//             headers: {
-//                 'Content-Type': 'application/json',
-//             },
-//             body: JSON.stringify({
-//                 origin: {
-//                     latitude: origin.lat,
-//                     longitude: origin.lng,
-//                     name: "origin"
-//                 },
-//                 destination: {
-//                     latitude: destination.lat,
-//                     longitude: destination.lng,
-//                     name: "destination"
-//                 }
-//             })
-//         });
-//
-//         if (!response.ok) {
-//             throw new Error('Network response was not ok');
-//         }
-//
-//         const tempRouteId = await response.text();
-//         console.log('Route ID:', tempRouteId);
-//
-//         return tempRouteId;
-//     } catch (error) {
-//         console.error('Error saving route points:', error);
-//         return null;
-//     }
-// }
-//
-//
-// function addLegToDB(origin, destination, polyline) {
-//     fetch('/leg/save', {
-//         method: 'POST',
-//         headers: {
-//             'Content-Type': 'application/json',
-//         },
-//         body: JSON.stringify({
-//             origin: {
-//                 latitude: origin.lat,
-//                 longitude: origin.lng
-//             },
-//             destination: {
-//                 latitude: destination.lat,
-//                 longitude: destination.lng
-//             },
-//             polyline: polyline,
-//             routeId: routeId
-//         })
-//     })
-//         .then(response => {
-//             if (!response.ok) {
-//                 throw new Error('Network response was not ok');
-//             }
-//             return response.text();
-//         })
-//         .then(legId => {
-//             console.log('Leg ID:', legId);  // Wyświetla id zapisanej trasy
-//         })
-//         .catch(error => console.error('Error saving route points:', error));
-// }
-
 // routes(home, destination, polyline, details) <- ma takie cos
 async function addJourneyToDatabase(title, routes){
     const requestBody = {
@@ -669,15 +567,30 @@ async function addJourneyToDatabase(title, routes){
             },
             body: JSON.stringify(requestBody),
         });
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+        if (response.status === 409) {
+            Swal.fire({
+                title: "Duplicate!",
+                text: "Journey title already exists",
+                icon: "warning"
+            });
+        } else if (!response.ok) {
+            Swal.fire({
+                title: "Error",
+                text: "Please try again",
+                icon: "error"
+            });
+        } else {
+            const data = await response.json();
+            console.log('Success:', data);
+            Swal.fire({
+                icon: "success",
+                title: "Journey saved successfully!",
+                showConfirmButton: false,
+                timer: 2400,
+            });
         }
-
-        const data = await response.json();
-        console.log('Success:', data);
     } catch (error) {
-        console.error('Error:', error);
+        alert('An unexpected error occurred.');
     }
 }
 
