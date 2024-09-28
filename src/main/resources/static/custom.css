@@ -382,7 +382,7 @@
     list-style-type: none;
 }
 
-.btn-new-route {
+#btn-new-route {
     position: absolute;
     bottom: 20px;
     right: 20px;
@@ -391,12 +391,16 @@
     border: none;
     color: white;
 }
-.btn-new-route:hover {
+#btn-new-route:hover {
     background: none;
     border: none;
     color: limegreen;
 }
-
+#btn-new-route.clicked {
+    background: none;
+    border: none;
+    color: white;
+}
 
 .offcanvas ul li {
     margin-top: 25px;
