@@ -14,9 +14,11 @@ let listItems = [];
 let current_total_time;
 let current_total_distance;
 let mainMarker;
-const SelectedPlaces = {};
+let SelectedPlaces = {};
 let routes = [];
 let titles= [];
+let markers = {};
+let polylines = [];
 const entertainmentClickHandler = createClickHandler('entertainment', Place);
 const foodAndDrinkClickHandler = createClickHandler('foodAndDrink', Place);
 const cultureClickHandler = createClickHandler('culture', Place);
@@ -54,7 +56,7 @@ async function initMap() {
     document.getElementById('destination').value = "Click on the map";
 
     // Add listener to create a marker after click
-    let markers = addMapListener();
+    markers = addMapListener();
 
     document.getElementById("test-radius").addEventListener("mouseover", function(){
         if(testCircle) { testCircle.setMap(null); }
@@ -505,7 +507,7 @@ async function calculateRoute(map, origin, destination) {
             });
 
             intermediatePath.setMap(map);
-
+            polylines.push(intermediatePath);
             routes.push({
                 polyline: route.polyline.encodedPolyline,
                 home: {latitude: origin.lat, longitude: origin.lng},
@@ -742,11 +744,36 @@ function RenderTripList() {
     list.innerHTML = '';
     titles.forEach(item => {
         const li = document.createElement('li');
-        const p = document.createElement('p');
-        p.textContent = item;
-        li.appendChild(p);
+        //const p = document.createElement('p');
+        //p.textContent = item;
+        const button = document.createElement('button');
+        button.classList.add('btn-trips');
+        button.textContent = item;
+        button.addEventListener('click', function() {
+            clearMap();
+        });
+        //li.appendChild(p);
+        li.appendChild(button);
         list.appendChild(li);
     });
+}
+
+function clearMap(){
+    Object.values(SelectedPlaces).forEach(item => {
+        item.map = null;
+    });
+    SelectedPlaces = {};
+    Object.values(markers).forEach(item => {
+        item.map = null;
+    });
+    markers = {};
+    polylines.forEach(polyline => {
+       polyline.setMap(null);
+    });
+    polylines = {};
+    //map.setCenter(homePoint);
+    listItems = [];
+    renderList();
 }
 
 function generateGoogleMapsLink(points, travelMode = "walking") {

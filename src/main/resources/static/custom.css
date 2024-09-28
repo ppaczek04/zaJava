@@ -405,14 +405,15 @@
 .offcanvas ul li {
     margin-top: 25px;
 }
-
-.offcanvas .trip-item {
+.btn-trips {
     color: white;
     font-size: 25px;
     text-decoration: none;
+    background: none;
+    border: none;
 }
 
-.offcanvas .trip-item:hover {
+.btn-trips:hover {
     color: limegreen;
     text-decoration: none;
 }
