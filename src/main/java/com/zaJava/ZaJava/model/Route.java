@@ -21,7 +21,8 @@ public class Route {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     @Column(
-            nullable = false
+            nullable = false,
+            length = 10000
     )
     private String polyline;
 
