@@ -29,6 +29,10 @@ $("#btn").click(function () {
     $(".sidebar").toggleClass('active');
 });
 
+$("#test_id").click(function () {
+    getJourney("My journey")
+})
+
 $("#btn-new-route").on('click', function() {
     $(this).addClass('clicked');
     console.log(titles);
@@ -243,7 +247,7 @@ async function handleButtonClick(key, place){
 }
 
 
-async function addMarkers(points) {
+async function addMarkers(points, info=true) {
     clearPlacesMarkers();
     let i = 1;
     let pinSvgString = getPinSvgString("unselected");
@@ -259,11 +263,6 @@ async function addMarkers(points) {
         ).documentElement;
         console.log(`\n\n I added place${i}: ${point.placeId} \n\n`)
 
-        const placeInformation = await getPlaceInfo(point.placeId);
-        const response = await calculateDistance(mainMarker.position, {lat: point.latitude, lng: point.longitude});
-        const distance = response.routes[0].distanceMeters;
-        console.log("response", distance);
-
         const placeKey = `place${i}`;
         placesMarkers[placeKey] = new google.maps.marker.AdvancedMarkerElement({
             position: {lat: point.latitude, lng: point.longitude},
@@ -271,16 +270,24 @@ async function addMarkers(points) {
             title: placeKey,
             content: pinSvg
         });
-        placesInfoWindows[placeKey] = new google.maps.InfoWindow({
-            content: getInfoWindowContent(placeInformation.displayName.text,
-                                        placeInformation.websiteUri,
-                            placeInformation.regularOpeningHours && placeInformation.regularOpeningHours.weekdayDescriptions
-                                            ? placeInformation.regularOpeningHours.weekdayDescriptions
-                                            : "None",
-                                        distance
-            ),
-            maxWidth: 270
-        });
+
+        if(info){
+            const placeInformation = await getPlaceInfo(point.placeId);
+            const response = await calculateDistance(mainMarker.position, {lat: point.latitude, lng: point.longitude});
+            const distance = response.routes[0].distanceMeters;
+            console.log("response", distance);
+
+            placesInfoWindows[placeKey] = new google.maps.InfoWindow({
+                content: getInfoWindowContent(placeInformation.displayName.text,
+                    placeInformation.websiteUri,
+                    placeInformation.regularOpeningHours && placeInformation.regularOpeningHours.weekdayDescriptions
+                        ? placeInformation.regularOpeningHours.weekdayDescriptions
+                        : "None",
+                    distance
+                ),
+                maxWidth: 270
+            });
+        }
 
 
         placesMarkers[placeKey].addListener('click', function () {
@@ -339,6 +346,9 @@ async function handleSelectButton(placeKey, marker = null) {
             const titleElement = document.getElementById('editable-title');
             const titleText = titleElement.textContent;
             addJourneyToDatabase(titleText, routes);
+            // TO DO USUNIECIA POZNIEJ
+            location.reload() // reloading website
+            //*****
         });
 
         // document.getElementById("link").addEventListener("click", async function () {
@@ -845,6 +855,99 @@ function getInfoWindowContentForDestination(placeName,distance) {
             `
 }
 
+async function getJourney(title){
+
+    const points = await getPlacesFromJourney(title);
+    const polylines = await getPolylinesFromJourney(title);
+    const new_points = points.map(place => ({
+        placeId: place.id,
+        latitude: place.latitude,
+        longitude: place.longitude
+    }));
+
+    await drawPolylines(polylines);
+    await addMarkers(new_points, false);
+}
+
+async function getPlacesFromJourney(journeyTitle) {
+    try {
+        const response = await fetch('/journey/get/places', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({title: journeyTitle})
+        });
+
+        if (!response.ok) {
+            console.error('Response status:', response.status); // Loguje kod statusu
+            const errorBody = await response.text(); // Odczytuje treść odpowiedzi
+            console.error('Response body:', errorBody); // Loguje treść odpowiedzi
+            throw new Error('Network response was not ok');
+        }
+
+        const points = await response.json();
+        console.log('Information:', points);
+        return points;
+    } catch (error) {
+        console.error('There was a problem with the fetch operation:', error);
+        return null;
+    }
+}
+
+async function getPolylinesFromJourney(journeyTitle) {
+    try {
+        const response = await fetch('/journey/get/polylines', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({title: journeyTitle})
+        });
+
+        if (!response.ok) {
+            console.error('Response status:', response.status); // Loguje kod statusu
+            const errorBody = await response.text(); // Odczytuje treść odpowiedzi
+            console.error('Response body:', errorBody); // Loguje treść odpowiedzi
+            throw new Error('Network response was not ok');
+        }
+
+        const polylines = await response.json();
+        console.log('Information:', polylines);
+        return polylines;
+    } catch (error) {
+        console.error('There was a problem with the fetch operation:', error);
+        return null;
+    }
+}
+
+async function drawPolyline2(polyline) {
+    const path = google.maps.geometry.encoding.decodePath(polyline);
+
+    // Render the polyline on the map
+    const intermediatePath = new google.maps.Polyline({
+        path: path,
+        geodesic: true,
+        strokeColor: "#9E5FC2",
+        strokeOpacity: 1.0,
+        strokeWeight: 5,
+    });
+
+    intermediatePath.addListener('mouseover', () => {
+        intermediatePath.setOptions({ strokeColor: '#00FF00' });
+    });
+    intermediatePath.addListener('mouseout', () => {
+        intermediatePath.setOptions({ strokeColor: '#9E5FC2' });
+    });
+
+    intermediatePath.setMap(map);
+}
+
+async function drawPolylines(polylines) {
+    for (const polyline of polylines) {
+        await drawPolyline2(polyline);
+    }
+}
 function getListFromLocalStorage() {
     const savedList = localStorage.getItem('savedRoutes');
     return savedList ? JSON.parse(savedList) : [];

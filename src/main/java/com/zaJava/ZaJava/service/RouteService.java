@@ -2,8 +2,9 @@ package com.zaJava.ZaJava.service;
 
 import com.zaJava.ZaJava.model.Route;
 import com.zaJava.ZaJava.repositories.RouteRepository;
-import com.zaJava.ZaJava.requests.LegRequest;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class RouteService {
@@ -18,4 +19,11 @@ public class RouteService {
         return routeRepository.save(route);
     }
 
+    public List<Route> getAllRoutesByJourneyTitle(String title) {
+        return routeRepository.findRoutesByJourneyTitle(title);
+    }
+
+    public List<String> getAllPolylinesByJourneyTitle(String title) {
+        return routeRepository.findPolylinesByJourneyTitle(title);
+    }
 }
