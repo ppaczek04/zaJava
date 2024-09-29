@@ -25,6 +25,7 @@ public class Route {
             length = 10000
     )
     private String polyline;
+    private Integer numberInJourney;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "home_id")

@@ -56,6 +56,9 @@ public class JourneyController {
     public ResponseEntity<?> getPolylines(@RequestBody TitleRequest title) {
         try {
             List<String> polylines = routeService.getAllPolylinesByJourneyTitle(title.getTitle());
+            for(String s: polylines){
+                System.out.print(s);
+            }
             return ResponseEntity.ok(polylines);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred.");
