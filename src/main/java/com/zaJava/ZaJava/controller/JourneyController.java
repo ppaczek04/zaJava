@@ -48,6 +48,7 @@ public class JourneyController {
             }
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Database error occurred.");
         } catch (Exception e) {
+            System.out.println(e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred.");
         }
     }
