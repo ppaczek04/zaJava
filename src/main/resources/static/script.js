@@ -29,14 +29,9 @@ $("#btn").click(function () {
     $(".sidebar").toggleClass('active');
 });
 
-$("#test_id").click(function () {
-    getJourney("My journey")
-})
-
 $("#btn-new-route").on('click', function() {
     $(this).addClass('clicked');
     console.log(titles);
-    localStorage.setItem('savedRoutes', JSON.stringify(titles));
     setTimeout(function() {
         window.location.reload();
     }, 100);
@@ -342,13 +337,11 @@ async function handleSelectButton(placeKey, marker = null) {
             marker1: mainMarker,
             marker2: marker
         });
-        $('#save').on('click', function() {
+        $('#save').on('click', async function () {
             const titleElement = document.getElementById('editable-title');
             const titleText = titleElement.textContent;
-            addJourneyToDatabase(titleText, routes);
-            // TO DO USUNIECIA POZNIEJ
-            location.reload() // reloading website
-            //*****
+            await addJourneyToDatabase(titleText, routes);
+            localStorage.setItem('savedRoutes', JSON.stringify(titles));
         });
 
         // document.getElementById("link").addEventListener("click", async function () {
@@ -759,8 +752,17 @@ function RenderTripList() {
         const button = document.createElement('button');
         button.classList.add('btn-trips');
         button.textContent = item;
-        button.addEventListener('click', function() {
-            clearMap();
+        button.addEventListener('click', async function () {
+            await clearMap();
+            let newPoints = await getPlacesFromJourney(item);
+            map.setCenter(new google.maps.LatLng(newPoints[0].latitude, newPoints[0].longitude));
+            document.getElementById('total-time').textContent = '0';
+            document.getElementById('total-distance').textContent = '0';
+            document.getElementById('editable-title').contentEditable = false;
+            document.getElementById('editable-title').textContent = item;
+            document.getElementById('origin').value =await GetAddress(newPoints[0].latitude, newPoints[0].longitude);
+            document.getElementById('destination').value = await GetAddress(newPoints[newPoints.length - 1].latitude, newPoints[newPoints.length - 1].longitude);
+            getJourney(item);
         });
         //li.appendChild(p);
         li.appendChild(button);
@@ -780,8 +782,7 @@ function clearMap(){
     polylines.forEach(polyline => {
        polyline.setMap(null);
     });
-    polylines = {};
-    //map.setCenter(homePoint);
+    polylines = [];
     listItems = [];
     renderList();
 }
