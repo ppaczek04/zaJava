@@ -21,6 +21,7 @@ const foodAndDrinkClickHandler = createClickHandler('foodAndDrink', Place);
 const cultureClickHandler = createClickHandler('culture', Place);
 const sportClickHandler = createClickHandler('sport', Place);
 const busStopClickHandler = createClickHandler('busStop', Place);
+let routeNumberInJourney = 0;
 
 $("#btn").click(function () {
     $(".sidebar").toggleClass('active');
@@ -501,10 +502,12 @@ async function calculateRoute(map, origin, destination) {
 
             routes.push({
                 polyline: route.polyline.encodedPolyline,
+                numberInJourney: routeNumberInJourney,
                 home: {latitude: origin.lat, longitude: origin.lng},
                 destination: {latitude: destination.lat, longitude: destination.lng},
                 details: {distance: route.distanceMeters, time: route.duration}
-            })
+            });
+            routeNumberInJourney += 1;
 
 
             return {
