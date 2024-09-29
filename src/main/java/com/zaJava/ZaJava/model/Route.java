@@ -27,11 +27,11 @@ public class Route {
     private String polyline;
     private Integer numberInJourney;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "home_id")
     private Place home;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "destination_id")
     private Place destination;
 
