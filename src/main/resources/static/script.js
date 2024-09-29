@@ -350,10 +350,6 @@ async function handleSelectButton(placeKey, marker = null) {
                 longitude: place.longitude
             }));
             routes =[];
-            // document.getElementById("link").removeEventListener("click", handleClickLink);
-            // document.getElementById("link").addEventListener("click", function () {
-            //     handleClickLink(newPoints);
-            // });
             const linkElement = document.getElementById("link");
             const newLinkElement = linkElement.cloneNode(true);
             linkElement.replaceWith(newLinkElement);
@@ -773,10 +769,14 @@ function RenderTripList() {
             const linkElement = document.getElementById("link");
             const newLinkElement = linkElement.cloneNode(true);
             linkElement.replaceWith(newLinkElement);
-            // newLinkElement.getElementById("link").removeEventListener("click", handleClickLink);
             newLinkElement.addEventListener("click", function () {
                 handleClickLink(newPoints);
             });
+            listItems = [];
+            for (const point of newPoints) {
+                listItems.push(await GetAddress(point.latitude, point.longitude));
+            }
+            renderList();
             map.setCenter(new google.maps.LatLng(newPoints[0].latitude, newPoints[0].longitude));
             document.getElementById('total-time').textContent = '0';
             document.getElementById('total-distance').textContent = '0';
@@ -784,7 +784,7 @@ function RenderTripList() {
             document.getElementById('editable-title').textContent = item;
             document.getElementById('origin').value =await GetAddress(newPoints[0].latitude, newPoints[0].longitude);
             document.getElementById('destination').value = await GetAddress(newPoints[newPoints.length - 1].latitude, newPoints[newPoints.length - 1].longitude);
-            getJourney(item);
+            await getJourney(item);
         });
         li.appendChild(button);
         list.appendChild(li);
