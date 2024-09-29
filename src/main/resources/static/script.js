@@ -349,7 +349,6 @@ async function handleSelectButton(placeKey, marker = null) {
                 latitude: place.latitude,
                 longitude: place.longitude
             }));
-            routes =[];
             const linkElement = document.getElementById("link");
             const newLinkElement = linkElement.cloneNode(true);
             linkElement.replaceWith(newLinkElement);
@@ -609,6 +608,7 @@ async function addJourneyToDatabase(title, routes){
                 text: "Please try again",
                 icon: "error"
             });
+            console.log(response);
         } else {
             const data = await response.json();
             titles.push(title);
@@ -620,6 +620,7 @@ async function addJourneyToDatabase(title, routes){
                 showConfirmButton: false,
                 timer: 2400,
             });
+            routes =[];
         }
     } catch (error) {
         alert('An unexpected error occurred.');
