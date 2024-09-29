@@ -343,14 +343,24 @@ async function handleSelectButton(placeKey, marker = null) {
             const titleText = titleElement.textContent;
             await addJourneyToDatabase(titleText, routes);
             localStorage.setItem('savedRoutes', JSON.stringify(titles));
+            const points = await getPlacesFromJourney(titleText);
+            const newPoints = points.map(place => ({
+                placeId: place.id,
+                latitude: place.latitude,
+                longitude: place.longitude
+            }));
+            routes =[];
+            // document.getElementById("link").removeEventListener("click", handleClickLink);
+            // document.getElementById("link").addEventListener("click", function () {
+            //     handleClickLink(newPoints);
+            // });
+            const linkElement = document.getElementById("link");
+            const newLinkElement = linkElement.cloneNode(true);
+            linkElement.replaceWith(newLinkElement);
+            newLinkElement.addEventListener("click", function () {
+                handleClickLink(newPoints);
+            });
         });
-
-        // document.getElementById("link").addEventListener("click", async function () {
-        //     const journeyCoords = getCoords(); // dopisać funkcję i endpoint do pobrania punktów trasy, chyba że jest jakiś inny sposób
-        //     const link = generateGoogleMapsLink(journeyCoords);
-        //     console.log("Link do Google Maps:", link);
-        //     window.open(link, "_blank");
-        // });
     }
     else{
         console.log('Select button clicked!');
@@ -520,7 +530,6 @@ async function calculateRoute(map, origin, destination) {
                 details: {distance: route.distanceMeters, time: route.duration}
             });
             routeNumberInJourney += 1;
-
 
             return {
                 polyline: route.polyline.encodedPolyline,
@@ -750,14 +759,24 @@ function RenderTripList() {
     list.innerHTML = '';
     titles.forEach(item => {
         const li = document.createElement('li');
-        //const p = document.createElement('p');
-        //p.textContent = item;
         const button = document.createElement('button');
         button.classList.add('btn-trips');
         button.textContent = item;
         button.addEventListener('click', async function () {
             await clearMap();
-            let newPoints = await getPlacesFromJourney(item);
+            const points = await getPlacesFromJourney(item);
+            const newPoints = points.map(place => ({
+                placeId: place.id,
+                latitude: place.latitude,
+                longitude: place.longitude
+            }));
+            const linkElement = document.getElementById("link");
+            const newLinkElement = linkElement.cloneNode(true);
+            linkElement.replaceWith(newLinkElement);
+            // newLinkElement.getElementById("link").removeEventListener("click", handleClickLink);
+            newLinkElement.addEventListener("click", function () {
+                handleClickLink(newPoints);
+            });
             map.setCenter(new google.maps.LatLng(newPoints[0].latitude, newPoints[0].longitude));
             document.getElementById('total-time').textContent = '0';
             document.getElementById('total-distance').textContent = '0';
@@ -767,7 +786,6 @@ function RenderTripList() {
             document.getElementById('destination').value = await GetAddress(newPoints[newPoints.length - 1].latitude, newPoints[newPoints.length - 1].longitude);
             getJourney(item);
         });
-        //li.appendChild(p);
         li.appendChild(button);
         list.appendChild(li);
     });
@@ -786,6 +804,7 @@ function clearMap(){
        polyline.setMap(null);
     });
     polylines = [];
+    routes = [];
     listItems = [];
     renderList();
 }
@@ -795,13 +814,13 @@ function generateGoogleMapsLink(points, travelMode = "walking") {
         throw new Error("Musisz podać co najmniej dwa punkty: początkowy i końcowy.");
     }
 
-    const origin = `${points[0][0]},${points[0][1]}`;
-    const destination = `${points[points.length - 1][0]},${points[points.length - 1][1]}`;
+    const origin = `${points[0].latitude},${points[0].longitude}`;
+    const destination = `${points[points.length - 1].latitude},${points[points.length - 1].longitude}`;
 
     let waypointsParam = "";
     if (points.length > 2) {
         const waypoints = points.slice(1, points.length - 1)
-            .map(point => `${point[0]},${point[1]}`)
+            .map(point => `${point.latitude},${point.longitude}`)
             .join('|');
         waypointsParam = `&waypoints=${waypoints}`;
     }
@@ -955,4 +974,10 @@ async function drawPolylines(polylines) {
 function getListFromLocalStorage() {
     const savedList = localStorage.getItem('savedRoutes');
     return savedList ? JSON.parse(savedList) : [];
+}
+
+function handleClickLink(newPoints){
+    const link = generateGoogleMapsLink(newPoints);
+    console.log("Link do Google Maps:", link);
+    window.open(link, "_blank");
 }
