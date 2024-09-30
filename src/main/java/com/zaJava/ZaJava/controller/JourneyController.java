@@ -80,6 +80,16 @@ public class JourneyController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred.");
         }
     }
+
+    @PostMapping("/total-time")
+    public ResponseEntity<?> getTotalJourneyTime(@RequestBody TitleRequest titleRequest) {
+        try {
+            String totalTime = journeyService.getTotalJourneyTime(titleRequest.getTitle());
+            return ResponseEntity.ok(totalTime);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while calculating total time.");
+        }
+    }
 //    public ResponseEntity<Journey> saveJourney(@RequestBody Journey journey) {
 //
 //        Journey savedJourney = journeyService.saveJourney(journey);

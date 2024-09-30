@@ -3,8 +3,13 @@ package com.zaJava.ZaJava.service;
 import com.zaJava.ZaJava.model.Journey;
 import com.zaJava.ZaJava.model.Place;
 import com.zaJava.ZaJava.model.Route;
+import com.zaJava.ZaJava.model.RouteDetails;
 import com.zaJava.ZaJava.repositories.JourneyRepository;
 import org.springframework.stereotype.Service;
+
+import java.time.Duration;
+import java.time.LocalTime;
+import java.util.List;
 
 @Service
 public class JourneyService {
@@ -46,5 +51,26 @@ public class JourneyService {
 
         }
         return journeyRepository.save(journey);
+    }
+
+    public String getTotalJourneyTime(String title) {
+        Journey journey = journeyRepository.findByTitle(title);
+
+        if (journey == null) {
+            throw new RuntimeException("Journey not found");
+        }
+
+        List<Route> routes = journey.getRoutes();
+        Integer totalTime = 0;
+
+        for (Route route : routes) {
+            RouteDetails details = route.getDetails();
+            if (details != null && details.getTime() != null) {
+                String timeString = details.getTime();
+                totalTime += Integer.parseInt(timeString);
+            }
+        }
+
+        return totalTime.toString(); // Zwracamy sformatowany czas jako string
     }
 }

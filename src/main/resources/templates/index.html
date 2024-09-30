@@ -184,12 +184,23 @@
         longitude: coords.lng,
         radius: 1500
     }
+    let map;
+    window.initMap = function() {
+        map = new google.maps.Map(document.getElementById('map'), {
+            center: coords,
+            zoom: 13,
+            mapId: "ZAJAVA_MAP",
+            gestureHandling: "greedy",
+        });
+    }
     /*]]>*/
 </script>
-<script th:inline="javascript" src="/script.js"></script>
+<script th:inline="javascript" th:type="module" src="/script.js"></script>
 <script async defer th:src="@{${'https://maps.googleapis.com/maps/api/js?key=' +
     @environment.getProperty('google.api.key') + '&callback=initMap&libraries=geometry,places,marker,maps,core'}}">
 </script>
+    <script th:type="module" src="/JavaScriptFiles/InfoWindowContent.js"></script>
+
 
 </body>
 </html>
