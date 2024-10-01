@@ -199,7 +199,13 @@
 <script async defer th:src="@{${'https://maps.googleapis.com/maps/api/js?key=' +
     @environment.getProperty('google.api.key') + '&callback=initMap&libraries=geometry,places,marker,maps,core'}}">
 </script>
-    <script th:type="module" src="/JavaScriptFiles/InfoWindowContent.js"></script>
+    <script th:type="module" src="/JavaScriptFiles/InfoWindowContents.js"></script>
+    <script th:type="module" src="/JavaScriptFiles/LoadingJourneyFunctions.js"></script>
+    <script th:type="module" src="/JavaScriptFiles/LocalStorage.js"></script>
+    <script th:type="module" src="/JavaScriptFiles/RefreshMap.js"></script>
+    <script th:type="module" src="/JavaScriptFiles/ExportToGMaps.js"></script>
+    <script th:type="module" src="/JavaScriptFiles/CustomPinsStrings.js"></script>
+    <script th:type="module" src="/JavaScriptFiles/RenderList.js"></script>
 
 
 </body>

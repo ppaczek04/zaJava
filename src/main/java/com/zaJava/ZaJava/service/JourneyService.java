@@ -8,8 +8,6 @@ import com.zaJava.ZaJava.repositories.JourneyRepository;
 import com.zaJava.ZaJava.repositories.RouteRepository;
 import org.springframework.stereotype.Service;
 
-import java.time.Duration;
-import java.time.LocalTime;
 import java.util.List;
 
 @Service
@@ -90,7 +88,7 @@ public class JourneyService {
 
         // Sprawdzenie, czy lista tras jest pusta
         if (routes.isEmpty()) {
-            throw new RuntimeException("Nie znaleziono tras dla podanej nazwy podróży: " + title);
+            throw new RuntimeException("No routes found for the given journey title: " + title);
         }
 
         int totalTime = 0;
@@ -108,15 +106,13 @@ public class JourneyService {
 
                     totalTime += Integer.parseInt(timeString);
                 } catch (NumberFormatException e) {
-                    throw new RuntimeException("Niepoprawny format czasu dla trasy: " + route.getId(), e);
+                    throw new RuntimeException("Invalid time format for route: " + route.getId(), e);
                 }
             } else {
-                throw new RuntimeException("Brak szczegółów trasy lub brak czasu dla trasy: " + route.getId());
+                throw new RuntimeException("Missing route details or time for route: " + route.getId());
             }
         }
 
-        return Integer.toString(totalTime);
+        return Integer.toString(totalTime/60);
     }
-
-
 }
