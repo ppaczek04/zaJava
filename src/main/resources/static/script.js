@@ -704,7 +704,7 @@ function RenderTripList() {
             renderList(newPoints);
             map.setCenter(new google.maps.LatLng(newPoints[0].latitude, newPoints[0].longitude));
             document.getElementById('total-time').textContent = await getTotalJourneyTime(item);
-            document.getElementById('total-distance').textContent = '-';
+            document.getElementById('total-distance').textContent = await getTotalJourneyDistance(item);
             document.getElementById('editable-title').contentEditable = false;
             document.getElementById('editable-title').textContent = item;
             document.getElementById('origin').value =await GetAddress(newPoints[0].latitude, newPoints[0].longitude);
@@ -881,9 +881,9 @@ function handleClickLink(newPoints){
     window.open(link, "_blank");
 }
 
-async function getTotalJourneyTime(title) {
+async function getTotalJourneyDistance(title) {
     try {
-        const response = await fetch('/journey/total-time', {
+        const response = await fetch('/journey/total-distance', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -893,16 +893,41 @@ async function getTotalJourneyTime(title) {
 
         if (!response.ok) {
             const errorMessage = await response.text();
+            console.error("Error fetching total journey distance:", errorMessage);
+            return Promise.reject(new Error(errorMessage));
+        }
+
+        const totalDistance = await response.text();
+        console.log("Total Journey Distance:", totalDistance);
+
+        return totalDistance;
+    } catch (error) {
+        console.error("Error occurred while fetching total journey distance:", error);
+        return Promise.reject(new Error("An unexpected error occurred while fetching journey distance."));
+    }
+}
+async function getTotalJourneyTime(title) {
+    try {
+        const response = await fetch('/journey/total-time', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({title: title}),
+        });
+
+        if (!response.ok) {
+            const errorMessage = await response.text();
             console.error("Error fetching total journey time:", errorMessage);
-            return;
+            return Promise.reject(new Error(errorMessage));
         }
 
         const totalTime = await response.text();
         console.log("Total Journey Time:", totalTime);
 
-        // Możesz zwrócić lub obsłużyć totalTime np. wyświetlić w interfejsie
         return totalTime;
     } catch (error) {
         console.error("Error occurred while fetching total journey time:", error);
+        return Promise.reject(new Error("An unexpected error occurred while fetching journey time."));
     }
 }

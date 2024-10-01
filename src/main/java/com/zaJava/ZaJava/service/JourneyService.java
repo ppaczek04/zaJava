@@ -5,6 +5,7 @@ import com.zaJava.ZaJava.model.Place;
 import com.zaJava.ZaJava.model.Route;
 import com.zaJava.ZaJava.model.RouteDetails;
 import com.zaJava.ZaJava.repositories.JourneyRepository;
+import com.zaJava.ZaJava.repositories.RouteRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -16,10 +17,13 @@ public class JourneyService {
 
     private final JourneyRepository journeyRepository;
     private final PlaceService placeService;
+    private final RouteRepository routeRepository;
 
-    public JourneyService(JourneyRepository journeyRepository, PlaceService placeService) {
+
+    public JourneyService(JourneyRepository journeyRepository, PlaceService placeService, RouteRepository routeRepository) {
         this.journeyRepository = journeyRepository;
         this.placeService = placeService;
+        this.routeRepository = routeRepository;
     }
 
     public Journey saveJourney(Journey journey) {
@@ -29,7 +33,7 @@ public class JourneyService {
                 route.getDetails().setRoute(route);
             }
 
-            if(route.getHome() != null) {
+            if (route.getHome() != null) {
                 Place existingHome = placeService.findByLatitudeAndLongitude(
                         route.getHome().getLatitude(), route.getHome().getLongitude());
                 if (existingHome != null) {
@@ -53,24 +57,66 @@ public class JourneyService {
         return journeyRepository.save(journey);
     }
 
-    public String getTotalJourneyTime(String title) {
-        Journey journey = journeyRepository.findByTitle(title);
+    public String getTotalJourneyDistance(String title) {
+        List<Route> routes = routeRepository.findRoutesByJourneyTitle(title);
 
-        if (journey == null) {
-            throw new RuntimeException("Journey not found");
+        if (routes.isEmpty()) {
+            throw new RuntimeException("No routes found for the given journey title: " + title);
         }
 
-        List<Route> routes = journey.getRoutes();
-        Integer totalTime = 0;
+        int totalDistance = 0;
 
         for (Route route : routes) {
             RouteDetails details = route.getDetails();
+
             if (details != null && details.getTime() != null) {
-                String timeString = details.getTime();
-                totalTime += Integer.parseInt(timeString);
+                try {
+                    String distanceString = details.getDistance();
+                    totalDistance += Integer.parseInt(distanceString);
+                } catch (NumberFormatException e) {
+                    throw new RuntimeException("Invalid distance format for route: " + route.getId(), e);
+                }
+            } else {
+                throw new RuntimeException("Missing route details or distance for route: " + route.getId());
             }
         }
 
-        return totalTime.toString(); // Zwracamy sformatowany czas jako string
+        return Integer.toString(totalDistance);
     }
+
+    public String getTotalJourneyTime(String title) {
+        // Pobranie tras powiązanych z tytułem podróży
+        List<Route> routes = routeRepository.findRoutesByJourneyTitle(title);
+
+        // Sprawdzenie, czy lista tras jest pusta
+        if (routes.isEmpty()) {
+            throw new RuntimeException("Nie znaleziono tras dla podanej nazwy podróży: " + title);
+        }
+
+        int totalTime = 0;
+
+        for (Route route : routes) {
+            RouteDetails details = route.getDetails();
+
+            if (details != null && details.getTime() != null) {
+                try {
+                    String timeString = details.getTime();
+
+                    if (timeString.endsWith("s")) {
+                        timeString = timeString.substring(0, timeString.length() - 1);
+                    }
+
+                    totalTime += Integer.parseInt(timeString);
+                } catch (NumberFormatException e) {
+                    throw new RuntimeException("Niepoprawny format czasu dla trasy: " + route.getId(), e);
+                }
+            } else {
+                throw new RuntimeException("Brak szczegółów trasy lub brak czasu dla trasy: " + route.getId());
+            }
+        }
+
+        return Integer.toString(totalTime);
+    }
+
+
 }
