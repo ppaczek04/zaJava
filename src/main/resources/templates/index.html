@@ -193,6 +193,13 @@
             gestureHandling: "greedy",
         });
     }
+    let mainMarker;
+    let SelectedPlaces = {};
+    let routes = [];
+    let titles= [];
+    let mainCircle;
+    let listItems = [];
+
     /*]]>*/
 </script>
 <script th:inline="javascript" th:type="module" src="/script.js"></script>
@@ -206,7 +213,11 @@
     <script th:type="module" src="/JavaScriptFiles/ExportToGMaps.js"></script>
     <script th:type="module" src="/JavaScriptFiles/CustomPinsStrings.js"></script>
     <script th:type="module" src="/JavaScriptFiles/RenderList.js"></script>
-
+    <script th:type="module" src="/JavaScriptFiles/HandleMarkerClick.js"></script>
+    <script th:type="module" src="/JavaScriptFiles/HandleSidebarTypeButtons.js"></script>
+    <script th:type="module" src="/JavaScriptFiles/InfoWindowsActions.js"></script>
+    <script th:type="module" src="/JavaScriptFiles/MapListeners.js"></script>
+    <script th:type="module" src="/JavaScriptFiles/MarkerListeners.js"></script>
 
 </body>
 </html>

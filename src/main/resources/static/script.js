@@ -1,9 +1,14 @@
-import {getInfoWindowContent, getInfoWindowContentForDestination} from "./JavaScriptFiles/InfoWindowContents.js";
-import {getPlacesFromJourney} from "./JavaScriptFiles/LoadingJourneyFunctions.js";
-import {setListInLocalStorage, getListFromLocalStorage} from "./JavaScriptFiles/LocalStorage.js";
+import {getInfoWindowContent} from "./JavaScriptFiles/InfoWindowContents.js";
+import {getListFromLocalStorage} from "./JavaScriptFiles/LocalStorage.js";
 import {getPinSvgString} from "./JavaScriptFiles/CustomPinsStrings.js";
-import {refreshExportLink} from "./JavaScriptFiles/ExportToGMaps.js";
 import {renderTripList, renderWaypointsList} from "./JavaScriptFiles/RenderList.js";
+import {
+    addTypeButtonsListeners,
+    createClickTypesHandler,
+} from "./JavaScriptFiles/HandleSidebarTypeButtons.js";
+import {addMapListener} from "./JavaScriptFiles/MapListeners.js";
+import {handleMarkerClick} from "./JavaScriptFiles/HandleMarkerClick.js";
+import {closeOtherInfoWindows} from "./JavaScriptFiles/InfoWindowsActions.js";
 
 let placesMarkers = {};
 let placesInfoWindows = {};
@@ -14,34 +19,26 @@ const selections = {
     sport: false,
     busStop: false
 };
-let mainCircle;
 let testCircle;
-let listItems = [];
 let current_total_time;
 let current_total_distance;
-let mainMarker;
-let SelectedPlaces = {};
-let routes = [];
-let titles= [];
+
 let markers = {};
 let polylines = [];
 let routeNumberInJourney = 0;
 
-const entertainmentClickHandler = createClickTypesHandler('entertainment', Place);
-const foodAndDrinkClickHandler = createClickTypesHandler('foodAndDrink', Place);
-const cultureClickHandler = createClickTypesHandler('culture', Place);
-const sportClickHandler = createClickTypesHandler('sport', Place);
-const busStopClickHandler = createClickTypesHandler('busStop', Place);
+const entertainmentClickHandler = createClickTypesHandler('entertainment', Place, selections);
+const foodAndDrinkClickHandler = createClickTypesHandler('foodAndDrink', Place, selections);
+const cultureClickHandler = createClickTypesHandler('culture', Place, selections);
+const sportClickHandler = createClickTypesHandler('sport', Place, selections);
+const busStopClickHandler = createClickTypesHandler('busStop', Place, selections);
 
 main();
 function main(){
-    titles = getListFromLocalStorage('savedRoutes');
-    console.log(titles);
-    renderTripList(titles, SelectedPlaces, routes, polylines, markers, listItems);
     setDefaults(1500);
 
     // Add listener to create a marker after click
-    markers = addMapListener();
+    markers = addMapListener(placesInfoWindows, entertainmentClickHandler, foodAndDrinkClickHandler, cultureClickHandler, sportClickHandler, busStopClickHandler, placesMarkers);
 
     document.getElementById("test-radius").addEventListener("mouseover", function(){
         if(testCircle) { testCircle.setMap(null); }
@@ -73,7 +70,7 @@ function main(){
             if(!markers.marker1.gmpDraggable){
                 document.getElementById("submit-destination").removeEventListener("click", handleClick);
                 markers.marker2.gmpDraggable = false;
-                handleSidebarButtons();
+                addTypeButtonsListeners(entertainmentClickHandler, foodAndDrinkClickHandler, cultureClickHandler, sportClickHandler, busStopClickHandler)
             }
             else{
                 Swal.fire({
@@ -100,21 +97,10 @@ $("#btn-new-route").on('click', function() {
     }, 100);
 });
 
-function handleSidebarButtons() {
-    document.getElementById("entertainmentAndRecreation").addEventListener('click', entertainmentClickHandler);
-    document.getElementById("foodAndDrink").addEventListener('click', foodAndDrinkClickHandler);
-    document.getElementById("culture").addEventListener('click', cultureClickHandler);
-    document.getElementById("sport").addEventListener('click', sportClickHandler);
-    document.getElementById("busStop").addEventListener('click', busStopClickHandler);
-}
-
-function createClickTypesHandler(eventType, place) {
-    return function() {
-        handleTypeButtonClick(eventType, place);
-    }
-}
-
 function setDefaults(radius){
+    titles = getListFromLocalStorage('savedRoutes');
+    console.log(titles);
+    renderTripList(titles, SelectedPlaces, routes, polylines, markers, listItems);
     document.getElementById('radius').value = radius;
     document.getElementById('total-time').textContent = '0';
     document.getElementById('total-distance').textContent = '0';
@@ -122,123 +108,17 @@ function setDefaults(radius){
     document.getElementById('destination').value = "Click on the map";
 }
 
-function addMapListener(){
-    let i = 0;
-    let markers = {};
-    map.addListener('click', async function (event) {
-        if (i < 2) {
-            const parser = new DOMParser();
-            let pinSvgString;
-            if (i < 1) {
-                pinSvgString = getPinSvgString("home");
-                setNewPlace(event.latLng.lat(), event.latLng.lng());
-                document.getElementById('origin').value = await GetAddress(event.latLng.lat(), event.latLng.lng());
-            } else {
-                pinSvgString = getPinSvgString("destination");
-                document.getElementById('destination').value = await GetAddress(event.latLng.lat(), event.latLng.lng());
-            }
-            const pinSvg = parser.parseFromString(
-                pinSvgString,
-                "image/svg+xml",
-            ).documentElement;
-            const markerKey = `marker${i + 1}`;
-            markers[markerKey] = new google.maps.marker.AdvancedMarkerElement({
-                map,
-                position: event.latLng,
-                title: markerKey,
-                content: pinSvg,
-                gmpDraggable: true
-            });
-            addMarkerListener(markers[markerKey]);
-            if( i === 1 ){          // dla markera końcowego (destination)
-                const position = markers[markerKey].position;
-                const response = await calculateDistance(mainMarker.position, {lat: position.lat, lng: position.lng});
-                const distance = response.routes[0].distanceMeters;
-                placesInfoWindows['destination'] = new google.maps.InfoWindow({
-                    content: getInfoWindowContentForDestination(await GetAddress(position.lat, position.lng), distance),
-                    maxWidth: 270
-                });
-                addDestinationMarkerListener(markers[markerKey]);
-            }
-            i += 1;
-            if(i === 1) {           // dla markera początkowego (home_
-                mainMarker = markers[markerKey];
-            }
-        }
-    });
-    return markers;
-}
-
-function addDestinationMarkerListener(marker){
-    marker.addListener('click', function () {
-        closeOtherInfoWindows();
-        placesInfoWindows['destination'].open({
-            anchor: marker,
-            map: map,
-        });
-        handleMarkerClick('destination', marker);
-    });
-}
-
-function removeTypesEventListeners(){
-    document.getElementById("entertainmentAndRecreation").removeEventListener('click', entertainmentClickHandler);
-    document.getElementById("foodAndDrink").removeEventListener('click', foodAndDrinkClickHandler);
-    document.getElementById("culture").removeEventListener('click', cultureClickHandler);
-    document.getElementById("sport").removeEventListener('click', sportClickHandler);
-    document.getElementById("busStop").removeEventListener('click', busStopClickHandler);
-}
-
-function addMarkerListener(marker){
-    marker.addListener('dragend', async function () {
-        const position = marker.position;
-        if (marker.title === 'marker1') {
-            setNewPlace(position.lat,position.lng);
-            document.getElementById('origin').value = await GetAddress(position.lat, position.lng);
-        }
-        if (marker.title === 'marker2') {
-            document.getElementById('destination').value = await GetAddress(position.lat, position.lng);
-            const response = await calculateDistance(mainMarker.position, {lat: position.lat, lng: position.lng});
-            const distance = response.routes[0].distanceMeters;
-            placesInfoWindows['destination'].setContent(
-                getInfoWindowContentForDestination(await GetAddress(position.lat, position.lng), distance)
-            );
-
-        }
-    });
-}
-
-function setNewPlace(latitude, longitude){
+export function setNewPlace(latitude, longitude){
     Place.latitude = latitude;
     Place.longitude = longitude;
 }
 
-async function drawPolyline(markers) {
+export async function drawPolyline(markers) {
     const result = await calculateRoute(map, markers.marker1.position, markers.marker2.position);
     if (result) {
         return result;
     } else {
         console.error('Failed to get route data.');
-    }
-
-}
-
-async function handleTypeButtonClick(key, place){
-    if (place !== undefined) {
-        console.log("\n\n", selections, "\n\n")
-        selections[key] = true;
-        console.log("\n\n", selections, "\n\n")
-        try {
-            await handleSelection(selections, place);
-            map.setCenter(new google.maps.LatLng(place.latitude, place.longitude));
-            map.setZoom(14);
-        } catch (error) {
-            console.error('Error during handleSelection:', error);
-        } finally {
-            selections[key] = false;
-        }
-    }
-    else {
-        console.log("You should choose starting point first")
     }
 }
 
@@ -293,111 +173,28 @@ export async function addMarkers(points, info=true) {
                 anchor: placesMarkers[placeKey],
                 map: map,
             });
-            handleMarkerClick(placeKey);
+            handleMarkerClick(placeKey, placesInfoWindows, entertainmentClickHandler, foodAndDrinkClickHandler, cultureClickHandler, sportClickHandler, busStopClickHandler, placesMarkers);
             });
             i += 1;
     }
 }
 
-function closeOtherInfoWindows(){
-    for(const key in placesInfoWindows) {
-        if (placesInfoWindows[key].isOpen) {
-            document.getElementById('close-button').click();
-        }
-    }
-}
 
-function handleMarkerClick(placeKey, marker = null) {
-        google.maps.event.addListenerOnce(placesInfoWindows[placeKey], 'domready', function () {
-        const closeButton = $('#close-button');
-        const selectButton = $('#select-button');
-
-        function handleButtonClick(event) {
-            if (event.target.id === 'close-button') {
-                handleCloseButton(placeKey, selectButton);
-            } else if (event.target.id === 'select-button') {
-                handleSelectButton(placeKey, marker);
-            }
-        }
-        refreshButtons(closeButton, selectButton, handleButtonClick);
-    });
-}
-
-function handleCloseButton(placeKey, selectButton) {
-    selectButton.off('click');
-    placesInfoWindows[placeKey].close();
-}
-
-async function handleSelectButton(placeKey, marker = null) {
-    let result, position, address;
-    if (placeKey === 'destination') {
-        removeTypesEventListeners();
-        position = marker.position;
-        clearPlacesMarkers();
-        result = await drawPolyline({
-            marker1: mainMarker,
-            marker2: marker
-        });
-        $('#save').on('click', async function () {
-            const titleElement = document.getElementById('editable-title');
-            const titleText = titleElement.textContent;
-            await addJourneyToDatabase(titleText, routes);
-            setListInLocalStorage('savedRoutes', titles);
-            const points = await getPlacesFromJourney(titleText);
-            const newPoints = points.map(place => ({
-                placeId: place.id,
-                latitude: place.latitude,
-                longitude: place.longitude
-            }));
-            refreshExportLink(newPoints);
-        });
-    }
-    else{
-        console.log('Select button clicked!');
-        position = placesMarkers[placeKey].position;
-        placesMarkers[placeKey].map = null;
-        let pinSvgStringSelected = getPinSvgString("selected");
-        const parser = new DOMParser();
-        const pinSvg = parser.parseFromString(
-            pinSvgStringSelected,
-            "image/svg+xml",
-        ).documentElement;
-
-        SelectedPlaces[placeKey] = new google.maps.marker.AdvancedMarkerElement({
-            map: map,
-            position: {lat: position.lat, lng: position.lng},
-            content: pinSvg,
-        });
-        result = await drawPolyline({marker1: mainMarker, marker2: SelectedPlaces[placeKey]});
-        mainMarker = SelectedPlaces[placeKey];
-    }
-    address = await GetAddress(position.lat, position.lng);
-    setNewPlace(position.lat, position.lng);
-    console.log(escapeBackslashes(result.polyline));
-    if (mainCircle) { mainCircle.setMap(null); }
-    listItems.push(address);
-    renderWaypointsList(listItems);
-    updateDistanceAndTime(result);
-}
-
-function escapeBackslashes(inputString) {
-    return inputString.replace(/\\/g, "\\\\");
-}
-function clearPlacesMarkers() {
+export function clearPlacesMarkers() {
     for (const key in placesMarkers) {
         placesMarkers[key].map = null;
         delete placesMarkers[key];
     }
 }
 
-function refreshButtons(closeButton, selectButton, functionName){
+export function refreshButtons(closeButton, selectButton, functionName){
     closeButton.off('click');
     selectButton.off('click');
     closeButton.on('click', functionName);
     selectButton.on('click', functionName);
 }
 
-function updateDistanceAndTime(result){
+export function updateDistanceAndTime(result){
     current_total_time = parseInt(document.getElementById('total-time').textContent, 10);
     current_total_time += Math.round(parseInt(result.time) / 60);
     document.getElementById('total-time').textContent = current_total_time;
@@ -419,37 +216,15 @@ function addCircle(radius){
     });
 }
 
-async function handleSelection(selections, place) {
-    if(mainMarker) {
-        setNewPlace(mainMarker.position.lat, mainMarker.position.lng)
-    }
-    console.log('SELECTIONS:', selections, '\n\n\n\n');
-    place.radius = Math.floor(document.getElementById('radius').value);
-    try {
-        const response = await fetch('/processSelections', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                selections: selections,
-                place: place
-            })
-        });
-
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-
-        const points = await response.json();
-        console.log('Otrzymane punkty:', points);
-        await addMarkers(points);
-    } catch (error) {
-        console.error('There was a problem with the fetch operation:', error);
-    }
+async function getGoogleApiKey() {
+    const response = await fetch('/api/google-api-key');
+    const data = await response.json();
+    return data.apiKey;
 }
 
+
 async function calculateRoute(map, origin, destination) {
+    const apiKey = await getGoogleApiKey();
     const requestBody = {
         origin: {
             location: {
@@ -476,7 +251,7 @@ async function calculateRoute(map, origin, destination) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-Goog-Api-Key': 'AIzaSyABfgoEg2PzuIVn-M4myjE1gNesvBHWMHU',
+                'X-Goog-Api-Key': apiKey,
                 'X-Goog-FieldMask': 'routes.distanceMeters,routes.duration,routes.polyline.encodedPolyline'
             },
             body: JSON.stringify(requestBody)
@@ -535,7 +310,7 @@ async function calculateRoute(map, origin, destination) {
 }
 
 
-async function calculateDistance(origin, destination) {
+export async function calculateDistance(origin, destination) {
     const requestBody = {
         origin: {
             location: {
@@ -577,7 +352,7 @@ async function calculateDistance(origin, destination) {
 }
 
 // routes(home, destination, polyline, details) <- ma takie cos
-async function addJourneyToDatabase(title, routes){
+export async function addJourneyToDatabase(title, routes){
     const requestBody = {
         "title": title,
         "routes": routes

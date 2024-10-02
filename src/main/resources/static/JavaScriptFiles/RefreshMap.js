@@ -25,7 +25,6 @@ export async function  clearAndSetMap(title, SelectedPlaces, routes, polylines, 
     routes = [];
 
     listItems = [];
-    renderWaypointsList();
     const points = await getPlacesFromJourney(title);
     const newPoints = points.map(place => ({
         placeId: place.id,
@@ -37,7 +36,7 @@ export async function  clearAndSetMap(title, SelectedPlaces, routes, polylines, 
     for (const point of newPoints) {
         listItems.push(await GetAddress(point.latitude, point.longitude));
     }
-    renderWaypointsList(newPoints);
+    await renderWaypointsList(listItems);
     map.setCenter(new google.maps.LatLng(newPoints[0].latitude, newPoints[0].longitude));
     document.getElementById('total-time').textContent = await getTotalJourneyTime(title);
     document.getElementById('total-distance').textContent = await getTotalJourneyDistance(title);
