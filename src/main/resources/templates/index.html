@@ -196,10 +196,14 @@
     let mainMarker;
     let SelectedPlaces = {};
     let routes = [];
-    let titles= [];
+    let markers = {};
+    let polylines = [];
+    let titles = [];
     let mainCircle;
     let listItems = [];
-
+    let routeNumberInJourney = 0;
+    let placesMarkers = {};
+    let placesInfoWindows = {};
     /*]]>*/
 </script>
 <script th:inline="javascript" th:type="module" src="/script.js"></script>
@@ -218,6 +222,9 @@
     <script th:type="module" src="/JavaScriptFiles/InfoWindowsActions.js"></script>
     <script th:type="module" src="/JavaScriptFiles/MapListeners.js"></script>
     <script th:type="module" src="/JavaScriptFiles/MarkerListeners.js"></script>
+    <script th:type="module" src="/JavaScriptFiles/AddMarkersAndInfoWindows.js"></script>
+    <script th:type="module" src="/JavaScriptFiles/GetAddress.js"></script>
+    <script th:type="module" src="/JavaScriptFiles/HandleSubmitButtons.js"></script>
 
 </body>
 </html>

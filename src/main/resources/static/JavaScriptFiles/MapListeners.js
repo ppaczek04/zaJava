@@ -1,7 +1,8 @@
 import {getPinSvgString} from "./CustomPinsStrings.js";
 import {getInfoWindowContentForDestination} from "./InfoWindowContents.js";
-import {calculateDistance, GetAddress, setNewPlace} from "../script.js";
+import {calculateDistance, setNewPlace} from "../script.js";
 import {addDestinationMarkerListener, addMarkerListener} from "./MarkerListeners.js";
+import {GetAddress} from "./GetAddress.js";
 
 export function addMapListener(placesInfoWindows, entertainmentClickHandler, foodAndDrinkClickHandler, cultureClickHandler, sportClickHandler, busStopClickHandler, placesMarkers){
     let i = 0;

@@ -5,8 +5,8 @@ import {
     getTotalJourneyTime
 } from "./LoadingJourneyFunctions.js";
 import {refreshExportLink} from "./ExportToGMaps.js";
-import {GetAddress} from "../script.js";
 import {renderWaypointsList} from "./RenderList.js";
+import {GetAddress} from "./GetAddress.js";
 
 export async function  clearAndSetMap(title, SelectedPlaces, routes, polylines, markers, listItems){
     // Clearing SelectedPlaces, home, destination and polylines

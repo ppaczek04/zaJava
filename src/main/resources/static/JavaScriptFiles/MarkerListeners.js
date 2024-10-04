@@ -1,7 +1,8 @@
 import {getInfoWindowContentForDestination} from "./InfoWindowContents.js";
-import {calculateDistance, GetAddress, setNewPlace} from "../script.js";
+import {calculateDistance, setNewPlace} from "../script.js";
 import {closeOtherInfoWindows} from "./InfoWindowsActions.js";
 import {handleMarkerClick} from "./HandleMarkerClick.js";
+import {GetAddress} from "./GetAddress.js";
 
 export function addDestinationMarkerListener(marker, placesInfoWindows, entertainmentClickHandler, foodAndDrinkClickHandler, cultureClickHandler, sportClickHandler, busStopClickHandler, placesMarkers){
     marker.addListener('click', function () {
