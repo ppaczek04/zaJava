@@ -15,7 +15,8 @@ import java.util.List;
 @Table(
         name = "places", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"latitude", "longitude"})
-})
+}
+)
 public class Place {
     @Id
     @GeneratedValue

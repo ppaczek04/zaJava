@@ -184,12 +184,47 @@
         longitude: coords.lng,
         radius: 1500
     }
+    let map;
+    window.initMap = function() {
+        map = new google.maps.Map(document.getElementById('map'), {
+            center: coords,
+            zoom: 13,
+            mapId: "ZAJAVA_MAP",
+            gestureHandling: "greedy",
+        });
+    }
+    let mainMarker;
+    let SelectedPlaces = {};
+    let routes = [];
+    let markers = {};
+    let polylines = [];
+    let titles = [];
+    let mainCircle;
+    let listItems = [];
+    let routeNumberInJourney = 0;
+    let placesMarkers = {};
+    let placesInfoWindows = {};
     /*]]>*/
 </script>
-<script th:inline="javascript" src="/script.js"></script>
+<script th:inline="javascript" th:type="module" src="/script.js"></script>
 <script async defer th:src="@{${'https://maps.googleapis.com/maps/api/js?key=' +
     @environment.getProperty('google.api.key') + '&callback=initMap&libraries=geometry,places,marker,maps,core'}}">
 </script>
+    <script th:type="module" src="/JavaScriptFiles/InfoWindowContents.js"></script>
+    <script th:type="module" src="/JavaScriptFiles/LoadingJourneyFunctions.js"></script>
+    <script th:type="module" src="/JavaScriptFiles/LocalStorage.js"></script>
+    <script th:type="module" src="/JavaScriptFiles/RefreshMap.js"></script>
+    <script th:type="module" src="/JavaScriptFiles/ExportToGMaps.js"></script>
+    <script th:type="module" src="/JavaScriptFiles/CustomPinsStrings.js"></script>
+    <script th:type="module" src="/JavaScriptFiles/RenderList.js"></script>
+    <script th:type="module" src="/JavaScriptFiles/HandleMarkerClick.js"></script>
+    <script th:type="module" src="/JavaScriptFiles/HandleSidebarTypeButtons.js"></script>
+    <script th:type="module" src="/JavaScriptFiles/InfoWindowsActions.js"></script>
+    <script th:type="module" src="/JavaScriptFiles/MapListeners.js"></script>
+    <script th:type="module" src="/JavaScriptFiles/MarkerListeners.js"></script>
+    <script th:type="module" src="/JavaScriptFiles/AddMarkersAndInfoWindows.js"></script>
+    <script th:type="module" src="/JavaScriptFiles/GetAddress.js"></script>
+    <script th:type="module" src="/JavaScriptFiles/HandleSubmitButtons.js"></script>
 
 </body>
 </html>

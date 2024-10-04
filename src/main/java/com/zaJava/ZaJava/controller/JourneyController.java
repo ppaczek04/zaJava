@@ -48,6 +48,7 @@ public class JourneyController {
             }
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Database error occurred.");
         } catch (Exception e) {
+            System.out.println(e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred.");
         }
     }
@@ -79,9 +80,31 @@ public class JourneyController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred.");
         }
     }
-//    public ResponseEntity<Journey> saveJourney(@RequestBody Journey journey) {
-//
-//        Journey savedJourney = journeyService.saveJourney(journey);
-//        return new ResponseEntity<>(savedJourney, HttpStatus.CREATED);
-//    }
+
+    @PostMapping("/total-distance")
+    public ResponseEntity<?> getTotalJourneyDistance(@RequestBody TitleRequest titleRequest) {
+        try {
+            String totalDistance = journeyService.getTotalJourneyDistance(titleRequest.getTitle());
+            return ResponseEntity.ok(totalDistance);
+        } catch (RuntimeException e) {
+            System.err.println("Error: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while calculating total distance.");
+        }
+    }
+    @PostMapping("/total-time")
+    public ResponseEntity<?> getTotalJourneyTime(@RequestBody TitleRequest titleRequest) {
+        try {
+            String totalTime = journeyService.getTotalJourneyTime(titleRequest.getTitle());
+            return ResponseEntity.ok(totalTime);
+        } catch (RuntimeException e) {
+            System.err.println("Error: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while calculating total time.");
+        }
+    }
 }

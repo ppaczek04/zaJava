@@ -184,7 +184,7 @@
     box-sizing: border-box;
 }
 
-.sidebar.active .submit-btn {
+.submit-btn {
     position: absolute;
     right: 5px;
     top: 50%;
@@ -203,14 +203,15 @@
     align-items: center;
 }
 
-.sidebar.active .submit-btn:hover {
+.submit-btn:hover {
     background-color: white;
     color: limegreen;
 }
-.sidebar.active .submit-btn.clicked {
+.submit-btn.clicked {
     background-color: white;
     color: limegreen;
 }
+
 
 .sidebar ul {
     margin-top: 30px;
