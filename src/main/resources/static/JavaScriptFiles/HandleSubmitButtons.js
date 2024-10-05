@@ -16,7 +16,7 @@ export function handleSubmitButtons(entertainmentClickHandler, foodAndDrinkClick
             renderWaypointsList(listItems);
             markers.marker1.gmpDraggable = false;
         } catch (error) {
-            console.log(error);
+            console.error(error);
             document.getElementById("submit-origin").addEventListener("click", handleClick);
         }
     });
@@ -36,7 +36,7 @@ export function handleSubmitButtons(entertainmentClickHandler, foodAndDrinkClick
             }
 
         } catch (error) {
-            console.log(error);
+            console.error(error);
         }
     });
 }

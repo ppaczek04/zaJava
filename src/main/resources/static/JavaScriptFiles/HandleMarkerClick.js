@@ -56,7 +56,6 @@ async function handleSelectButton(placeKey, entertainmentClickHandler, foodAndDr
         });
     }
     else{
-        console.log('Select button clicked!');
         position = placesMarkers[placeKey].position;
         placesMarkers[placeKey].map = null;
         let pinSvgStringSelected = getPinSvgString("selected");
@@ -187,12 +186,8 @@ async function calculateRoute(map, origin, destination) {
 
         const data = await response.json();
 
-        console.log('Full response:', data);
-
         if (data.routes && data.routes.length > 0) {
             const route = data.routes[0];
-            console.log('Odległość:', route.distanceMeters, 'meters');
-            console.log('Czas trwania:', route.duration, 'seconds');
 
             // Decode the polyline
             const path = google.maps.geometry.encoding.decodePath(route.polyline.encodedPolyline);

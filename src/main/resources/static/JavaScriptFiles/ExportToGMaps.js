@@ -28,6 +28,5 @@ export function refreshExportLink(newPoints){
 
 export function handleClickLink(newPoints){
     const link = generateGoogleMapsLink(newPoints);
-    console.log("Link do Google Maps:", link);
     window.open(link, "_blank");
 }
