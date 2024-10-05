@@ -6,7 +6,7 @@ import {getPinSvgString} from "./JavaScriptFiles/CustomPinsStrings.js";
 import {getInfoWindowContent} from "./JavaScriptFiles/InfoWindowContents.js";
 import {closeOtherInfoWindows} from "./JavaScriptFiles/InfoWindowsActions.js";
 import {clearPlacesMarkers, handleMarkerClick} from "./JavaScriptFiles/HandleMarkerClick.js";
-import {getPlaceInfo} from "./JavaScriptFiles/AddMarkersAndInfoWindows.js";
+import {getPlaceInfo} from "./JavaScriptFiles/GetPlaceInfo.js";
 import {handleSubmitButtons} from "./JavaScriptFiles/HandleSubmitButtons.js";
 
 
@@ -44,7 +44,6 @@ $("#btn").click(function () {
 
 $("#btn-new-route").on('click', function() {
     $(this).addClass('clicked');
-    console.log(titles);
     setTimeout(function() {
         window.location.reload();
     }, 100);
@@ -62,7 +61,6 @@ function addTestCircleListener(){
 
 function setDefaults(radius){
     titles = getListFromLocalStorage('savedRoutes');
-    console.log(titles);
     renderTripList(titles, SelectedPlaces, routes, polylines, markers, listItems);
     document.getElementById('radius').value = radius;
     document.getElementById('total-time').textContent = '0';
@@ -124,9 +122,7 @@ export async function calculateDistance(origin, destination) {
     throw new Error('Network response was not ok');
     }
 
-    const distance = await response.json();
-    console.log('Information: ', distance);
-    return distance;
+    return await response.json();
 }
 
 export async function addMarkers(points, info=true) {
@@ -136,14 +132,12 @@ export async function addMarkers(points, info=true) {
     if(mainCircle) { mainCircle.setMap(null); }
     mainCircle = addCircle(Math.floor(document.getElementById('radius').value));
 
-    console.log('POINTS: ', points, "\n");
     for (const point of points) {
         const parser = new DOMParser();
         const pinSvg = parser.parseFromString(
             pinSvgString,
             "image/svg+xml",
         ).documentElement;
-        console.log(`\n\n I added place${i}: ${point.placeId} \n\n`)
 
         const placeKey = `place${i}`;
         placesMarkers[placeKey] = new google.maps.marker.AdvancedMarkerElement({
@@ -157,7 +151,6 @@ export async function addMarkers(points, info=true) {
             const placeInformation = await getPlaceInfo(point.placeId);
             const response = await calculateDistance(mainMarker.position, {lat: point.latitude, lng: point.longitude});
             const distance = response.routes[0].distanceMeters;
-            console.log("response", distance);
 
             placesInfoWindows[placeKey] = new google.maps.InfoWindow({
                 content: getInfoWindowContent(placeInformation.displayName.text,
@@ -172,8 +165,7 @@ export async function addMarkers(points, info=true) {
         }
 
         placesMarkers[placeKey].addListener('click', function () {
-            console.log(`Marker ${placeKey} clicked`);
-            closeOtherInfoWindows();
+            closeOtherInfoWindows(placesInfoWindows);
             placesInfoWindows[placeKey].open({
                 anchor: placesMarkers[placeKey],
                 map: map,

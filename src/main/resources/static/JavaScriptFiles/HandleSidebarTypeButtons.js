@@ -24,9 +24,7 @@ export function createClickTypesHandler(eventType, place, selections) {
 
 async function handleTypeButtonClick(key, place, selections){
     if (place !== undefined) {
-        console.log("\n\n", selections, "\n\n")
         selections[key] = true;
-        console.log("\n\n", selections, "\n\n")
         try {
             await handleSelection(selections, place);
             map.setCenter(new google.maps.LatLng(place.latitude, place.longitude));
@@ -46,7 +44,6 @@ async function handleSelection(selections, place) {
     if(mainMarker) {
         setNewPlace(mainMarker.position.lat, mainMarker.position.lng)
     }
-    console.log('SELECTIONS:', selections, '\n\n\n\n');
     place.radius = Math.floor(document.getElementById('radius').value);
     try {
         const response = await fetch('/processSelections', {
@@ -65,7 +62,6 @@ async function handleSelection(selections, place) {
         }
 
         const points = await response.json();
-        console.log('Otrzymane punkty:', points);
         await addMarkers(points);
     } catch (error) {
         console.error('There was a problem with the fetch operation:', error);

@@ -12,9 +12,7 @@ export async function getPlaceInfo(placeId) {
             console.error('Network response was not ok');
         }
 
-        const placeInformation = await response.json();
-        console.log('Information:', placeInformation);
-        return placeInformation;
+        return await response.json();
     } catch (error) {
         console.error('There was a problem with the fetch operation:', error);
         return null;
