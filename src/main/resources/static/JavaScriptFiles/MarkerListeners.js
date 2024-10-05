@@ -2,7 +2,7 @@ import {getInfoWindowContentForDestination} from "./InfoWindowContents.js";
 import {calculateDistance, setNewPlace} from "../script.js";
 import {closeOtherInfoWindows} from "./InfoWindowsActions.js";
 import {handleMarkerClick} from "./HandleMarkerClick.js";
-import {GetAddress} from "./GetAddress.js";
+import {getAddress} from "./GetAddress.js";
 
 export function addDestinationMarkerListener(marker, placesInfoWindows, entertainmentClickHandler, foodAndDrinkClickHandler, cultureClickHandler, sportClickHandler, busStopClickHandler, placesMarkers){
     marker.addListener('click', function () {
@@ -20,14 +20,14 @@ export function addMarkerListener(marker, placesInfoWindows){
         const position = marker.position;
         if (marker.title === 'marker1') {
             setNewPlace(position.lat,position.lng);
-            document.getElementById('origin').value = await GetAddress(position.lat, position.lng);
+            document.getElementById('origin').value = await getAddress(position.lat, position.lng);
         }
         if (marker.title === 'marker2') {
-            document.getElementById('destination').value = await GetAddress(position.lat, position.lng);
+            document.getElementById('destination').value = await getAddress(position.lat, position.lng);
             const response = await calculateDistance(mainMarker.position, {lat: position.lat, lng: position.lng});
             const distance = response.routes[0].distanceMeters;
             placesInfoWindows['destination'].setContent(
-                getInfoWindowContentForDestination(await GetAddress(position.lat, position.lng), distance)
+                getInfoWindowContentForDestination(await getAddress(position.lat, position.lng), distance)
             );
 
         }

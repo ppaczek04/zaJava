@@ -1,4 +1,4 @@
-import {GetAddress} from "./GetAddress.js";
+import {getAddress} from "./GetAddress.js";
 import {renderWaypointsList} from "./RenderList.js";
 import {addTypeButtonsListeners} from "./HandleSidebarTypeButtons.js";
 
@@ -11,7 +11,7 @@ export function handleSubmitButtons(entertainmentClickHandler, foodAndDrinkClick
     document.getElementById("submit-origin").addEventListener("click", async function handleClick() {
         document.getElementById("submit-origin").removeEventListener("click", handleClick);
         try {
-            const address = await GetAddress(markers.marker1.position.lat, markers.marker1.position.lng);
+            const address = await getAddress(markers.marker1.position.lat, markers.marker1.position.lng);
             listItems.push(address);
             renderWaypointsList(listItems);
             markers.marker1.gmpDraggable = false;

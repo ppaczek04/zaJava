@@ -6,7 +6,7 @@ import {getPinSvgString} from "./JavaScriptFiles/CustomPinsStrings.js";
 import {getInfoWindowContent} from "./JavaScriptFiles/InfoWindowContents.js";
 import {closeOtherInfoWindows} from "./JavaScriptFiles/InfoWindowsActions.js";
 import {clearPlacesMarkers, handleMarkerClick} from "./JavaScriptFiles/HandleMarkerClick.js";
-import {getPlaceInfo} from "./JavaScriptFiles/AddMarkersAndInfoWindows.js";
+import {getPlaceInfo} from "./JavaScriptFiles/GetPlaceInfo.js";
 import {handleSubmitButtons} from "./JavaScriptFiles/HandleSubmitButtons.js";
 
 

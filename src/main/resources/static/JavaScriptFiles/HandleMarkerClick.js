@@ -5,7 +5,7 @@ import {refreshExportLink} from "./ExportToGMaps.js";
 import {getPinSvgString} from "./CustomPinsStrings.js";
 import {renderTripList, renderWaypointsList} from "./RenderList.js";
 import {setNewPlace} from "../script.js";
-import {GetAddress} from "./GetAddress.js";
+import {getAddress} from "./GetAddress.js";
 
 let current_total_time;
 let current_total_distance;
@@ -73,7 +73,7 @@ async function handleSelectButton(placeKey, entertainmentClickHandler, foodAndDr
         result = await drawPolyline({marker1: mainMarker, marker2: SelectedPlaces[placeKey]});
         mainMarker = SelectedPlaces[placeKey];
     }
-    address = await GetAddress(position.lat, position.lng);
+    address = await getAddress(position.lat, position.lng);
     setNewPlace(position.lat, position.lng);
     if (mainCircle) { mainCircle.setMap(null); }
     listItems.push(address);
