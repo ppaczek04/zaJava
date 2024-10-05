@@ -3,13 +3,13 @@ spring:
   config:
     import: classpath:/application-local.properties
   datasource:
-    url: jdbc:postgresql://localhost:5432/maps_db
+    url: jdbc:postgresql://postgres.railway.internal:5432/railway
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update
     database: postgresql
     show-sql: true
   main:
