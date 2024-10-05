@@ -173,7 +173,7 @@ export async function addMarkers(points, info=true) {
 
         placesMarkers[placeKey].addListener('click', function () {
             console.log(`Marker ${placeKey} clicked`);
-            closeOtherInfoWindows();
+            closeOtherInfoWindows(placesInfoWindows);
             placesInfoWindows[placeKey].open({
                 anchor: placesMarkers[placeKey],
                 map: map,
