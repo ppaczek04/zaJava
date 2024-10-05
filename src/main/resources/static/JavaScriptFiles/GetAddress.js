@@ -1,4 +1,4 @@
-export async function GetAddress(latitude, longitude) {
+export async function getAddress(latitude, longitude) {
     try {
         const response = await fetch('/address/get', {
             method: 'POST',

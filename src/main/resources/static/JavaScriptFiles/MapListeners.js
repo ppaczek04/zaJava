@@ -2,7 +2,7 @@ import {getPinSvgString} from "./CustomPinsStrings.js";
 import {getInfoWindowContentForDestination} from "./InfoWindowContents.js";
 import {calculateDistance, setNewPlace} from "../script.js";
 import {addDestinationMarkerListener, addMarkerListener} from "./MarkerListeners.js";
-import {GetAddress} from "./GetAddress.js";
+import {getAddress} from "./GetAddress.js";
 
 export function addMapListener(placesInfoWindows, entertainmentClickHandler, foodAndDrinkClickHandler, cultureClickHandler, sportClickHandler, busStopClickHandler, placesMarkers){
     let i = 0;
@@ -14,10 +14,10 @@ export function addMapListener(placesInfoWindows, entertainmentClickHandler, foo
             if (i < 1) {
                 pinSvgString = getPinSvgString("home");
                 setNewPlace(event.latLng.lat(), event.latLng.lng());
-                document.getElementById('origin').value = await GetAddress(event.latLng.lat(), event.latLng.lng());
+                document.getElementById('origin').value = await getAddress(event.latLng.lat(), event.latLng.lng());
             } else {
                 pinSvgString = getPinSvgString("destination");
-                document.getElementById('destination').value = await GetAddress(event.latLng.lat(), event.latLng.lng());
+                document.getElementById('destination').value = await getAddress(event.latLng.lat(), event.latLng.lng());
             }
             const pinSvg = parser.parseFromString(
                 pinSvgString,
@@ -37,7 +37,7 @@ export function addMapListener(placesInfoWindows, entertainmentClickHandler, foo
                 const response = await calculateDistance(mainMarker.position, {lat: position.lat, lng: position.lng});
                 const distance = response.routes[0].distanceMeters;
                 placesInfoWindows['destination'] = new google.maps.InfoWindow({
-                    content: getInfoWindowContentForDestination(await GetAddress(position.lat, position.lng), distance),
+                    content: getInfoWindowContentForDestination(await getAddress(position.lat, position.lng), distance),
                     maxWidth: 270
                 });
                 addDestinationMarkerListener(markers[markerKey], placesInfoWindows, entertainmentClickHandler, foodAndDrinkClickHandler, cultureClickHandler, sportClickHandler, busStopClickHandler, placesMarkers);
